@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Timeblocks" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>Timeblocks</title>
+  <style>
+    :root {
+      --bg: #080b10;
+      --card: #111620;
+      --card-done: #0c0f16;
+      --border: #1e2738;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #526077;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59, 130, 246, 0.14);
+      --green: #10b981;
+      --green-soft: rgba(16, 185, 129, 0.14);
+      --amber: #f59e0b;
+      --amber-soft: rgba(245, 158, 11, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: env(safe-area-inset-top, 10px) 12px calc(env(safe-area-inset-bottom, 16px) + 20px) 12px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* Ultra-Compact Top Bar: Day Title + Progress + Small '+' Box at Top Right */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 2px 10px 2px;
+      gap: 8px;
+    }
+
+    .title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .day-title {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .progress-pill {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      background: var(--green-soft);
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .day-select {
+      background: var(--card);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .icon-box-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .icon-box-btn.add-btn {
+      background: var(--accent-soft);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+    }
+
+    /* 10-Row Bubble Checklist (Front & Center) */
+    .bubble-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .bubble-row {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 9px 11px;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .bubble-row.completed {
+      background: var(--card-done);
+      border-color: #151b26;
+    }
+
+    .row-main {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Bubble Circle */
+    .bubble-circle {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #475569;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .bubble-row.completed .bubble-circle {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .bubble-circle svg {
+      width: 14px;
+      height: 14px;
+      stroke: #06110b;
+      stroke-width: 3.2;
+      fill: none;
+      opacity: 0;
+    }
+
+    .bubble-row.completed .bubble-circle svg {
+      opacity: 1;
+    }
+
+    .row-text {
+      flex: 1;
+      min-width: 0;
+      cursor: pointer;
+    }
+
+    .row-line {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .time-str {
+      font-size: 12px;
+      font-weight: 700;
+      color: #60a5fa;
+      white-space: nowrap;
+    }
+
+    .bubble-row.completed .time-str {
+      color: var(--text-dim);
+    }
+
+    .task-str {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.28;
+    }
+
+    .bubble-row.completed .task-str {
+      color: var(--text-dim);
+      text-decoration: line-through;
+    }
+
+    /* Inline Ultra-Compact Metric Controls (Always accessible with 1 thumb tap: - / value / + / Hold Timer) */
+    .inline-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .metric-control {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .metric-title {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      min-width: 78px;
+    }
+
+    .metric-title small {
+      display: block;
+      font-size: 9.5px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    /* Slider + +/- Buttons + Timer Bar */
+    .control-cluster {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .step-btn {
+      width: 28px;
+      height: 26px;
+      border-radius: 7px;
+      border: 1px solid #2b374d;
+      background: #172030;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .step-btn:active {
+      background: var(--accent);
+    }
+
+    .val-pill {
+      min-width: 56px;
+      text-align: center;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #34d399;
+      background: var(--green-soft);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 3px 7px;
+      border-radius: 7px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .touch-slider {
+      width: 72px;
+      accent-color: var(--accent);
+      height: 4px;
+      cursor: pointer;
+    }
+
+    .timer-btn {
+      padding: 4px 8px;
+      border-radius: 7px;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      background: var(--amber-soft);
+      color: #fbbf24;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-btn.running {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: #ffffff;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.78; }
+    }
+
+    /* Full-App Secondary Section (Hidden in Widget-Only Mode, toggleable at bottom) */
+    .full-app-drawer {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .drawer-toggle-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .ghost-btn {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .ghost-btn.primary-sync {
+      background: var(--green-soft);
+      border-color: rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+
+    .panel-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 12px;
+      display: none;
+    }
+
+    .panel-card.open {
+      display: block;
+    }
+
+    .panel-header {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Goal Projections in Full App Drawer */
+    .goal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .goal-box {
+      background: #0b0e15;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px;
+    }
+
+    .goal-box-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .goal-box-nums {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 3px 0;
+    }
+
+    .goal-box-pace {
+      font-size: 10px;
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    /* Backlog items */
+    .tier-filter {
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+      scrollbar-width: none;
+    }
+
+    .tier-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 7px;
+      background: #0b0e15;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .tier-chip.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .backlog-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 4px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 12.5px;
+      gap: 8px;
+    }
+
+    /* Small Top-Right '+' Quick Add Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 60px 14px 14px 14px;
+      z-index: 90;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      width: 100%;
+      max-width: 420px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      background: #080b10;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 11px;
+      border-radius: 9px;
+      font-size: 13.5px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .btn-sm {
+      padding: 8px 14px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-70px);
+      background: #1e293b;
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: transform 0.2s ease;
+      z-index: 120;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toast" class="toast">Saved</div>
+
+  <!-- Minimal Header: Day Title, Completion Pill, Day Selector, and Small '+' Box Button at Top Right -->
+  <header class="top-bar">
+    <div class="title-group">
+      <div class="day-title" id="dayTitle">Wed 11/18</div>
+      <div class="progress-pill" id="progressPill">4/10</div>
+    </div>
+    <div class="top-actions">
+      <select id="daySelect" class="day-select" onchange="selectDay(this.value)"></select>
+      <button class="icon-box-btn add-btn" onclick="openAddModal()" title="Quick Add Task or Goal">+</button>
+    </div>
+  </header>
+
+  <!-- Primary 10-Row Bubble Schedule & Inline Metric Checklist (Front & Center) -->
+  <main class="bubble-list" id="bubbleList"></main>
+
+  <!-- Subtle Footer Toggles for Full-App Analytics / Backlog / Sync to Google Sheet DB -->
+  <div class="drawer-toggle-bar">
+    <button class="ghost-btn" onclick="togglePanel('goalsPanel')">2027 Projections</button>
+    <button class="ghost-btn" onclick="togglePanel('backlogPanel')">Backlog (<span id="backlogCount">32</span>)</button>
+    <button class="ghost-btn primary-sync" onclick="syncToSheetDB()">Sync DB</button>
+  </div>
+
+  <section class="full-app-drawer">
+    <!-- 2027 Goal Projections Panel (Only shown when tapped in Full App) -->
+    <div id="goalsPanel" class="panel-card">
+      <div class="panel-header">
+        <span>Long-Term Goal Projections (2026 -> End of 2027)</span>
+      </div>
+      <div class="goal-grid" id="goalGrid"></div>
+    </div>
+
+    <!-- 6-Tier Backlog Database Panel -->
+    <div id="backlogPanel" class="panel-card">
+      <div class="panel-header">
+        <span>6-Tier Backlog Database (Replaces Google Tasks)</span>
+      </div>
+      <div class="tier-filter" id="tierFilter"></div>
+      <div id="backlogList"></div>
+    </div>
+  </section>
+
+  <!-- Top-Right '+' Quick Add Modal -->
+  <div id="addModal" class="modal-backdrop" onclick="if(event.target===this)closeAddModal()">
+    <div class="modal-card">
+      <div style="font-size:14px;font-weight:700;">Quick Add Task or Timeblock</div>
+      <input id="newTaskTitle" class="form-input" type="text" placeholder="Task title (e.g. Install trailer shelves)" />
+      <select id="newTaskBucket" class="form-select" onchange="toggleTimeInput(this.value)">
+        <option value="today">Today's Timeblock Schedule</option>
+        <option value="This week">Tier 1: This week</option>
+        <option value="This month">Tier 2: This month</option>
+        <option value="YouTube">Tier 3: YouTube Ideas & Production</option>
+        <option value="Bigger projects">Tier 4: Bigger projects (Sat 4-hr block)</option>
+        <option value="Computer Tasks">Tier 5: Computer Tasks (CAD / MWI)</option>
+        <option value="General To Do">Tier 6: General To Do</option>
+      </select>
+      <input id="newTaskTime" class="form-input" type="text" placeholder="Time range (e.g. 4:30 - 5:00 PM)" />
+      <div class="modal-actions">
+        <button class="btn-sm" style="background:#1e2636;color:#cbd5e1;" onclick="closeAddModal()">Cancel</button>
+        <button class="btn-sm" style="background:var(--accent);color:#fff;" onclick="submitQuickAdd()">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let appState = null;
+    let currentDayKey = "2026-11-18";
+    let activeTier = "This week";
+    let activeTimers = {}; // key -> { startMs, intervalId, baseSec }
+
+    function fmtSec(totalSec) {
+      const s = Math.max(0, Math.round(totalSec));
+      const m = Math.floor(s / 60);
+      const rem = s % 60;
+      return `${m}:${rem < 10 ? "0" + rem : rem}`;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1800);
+    }
+
+    async function loadState() {
+      // 1. If running inside Google Apps Script Web App
+      if (typeof google !== "undefined" && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function(data) {
+          appState = data;
+          currentDayKey = appState.activeDay || Object.keys(appState.days)[0];
+          renderAll();
+        }).readLiveState();
+        return;
+      }
+
+      // 2. Local server or static fallback
+      try {
+        const res = await fetch("/api/state");
+        appState = await res.json();
+      } catch (e) {
+        const res = await fetch("schedule_state.json");
+        appState = await res.json();
+      }
+      currentDayKey = appState.activeDay || Object.keys(appState.days)[0];
+
+      // Check URL params for deep-link action from iOS Scriptable Widget
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("toggleRow")) {
+        const r = parseInt(params.get("toggleRow"), 10);
+        const day = appState.days[currentDayKey];
+        const b = day.blocks.find(x => x.row === r);
+        if (b) {
+          b.completed = !b.completed;
+          saveState(true);
+        }
+      } else if (params.get("quickAdd") === "1") {
+        setTimeout(() => openAddModal(), 100);
+      }
+
+      renderAll();
+    }
+
+    function selectDay(dayKey) {
+      currentDayKey = dayKey;
+      appState.activeDay = dayKey;
+      renderAll();
+      saveState(true);
+    }
+
+    function toggleBlock(idx) {
+      const day = appState.days[currentDayKey];
+      day.blocks[idx].completed = !day.blocks[idx].completed;
+      renderAll();
+      saveState(true);
+    }
+
+    function stepMetric(key, delta) {
+      const day = appState.days[currentDayKey];
+      const m = day.metrics;
+      if (key === "pushups_morning") {
+        // Cycle 0 -> 33 -> 66 -> 100 -> 125...
+        const cur = Number(m.pushups_morning || 0);
+        if (delta > 0) {
+          if (cur < 33) m.pushups_morning = 33;
+          else if (cur < 66) m.pushups_morning = 66;
+          else if (cur < 100) m.pushups_morning = 100;
+          else m.pushups_morning = cur + 25;
+        } else {
+          if (cur === 100) m.pushups_morning = 66;
+          else if (cur === 66) m.pushups_morning = 33;
+          else if (cur <= 33) m.pushups_morning = 0;
+          else m.pushups_morning = Math.max(0, cur - 25);
+        }
+      } else if (key === "pushups_day") {
+        m.pushups_day = Math.max(0, Number(m.pushups_day || 0) + delta);
+      } else if (key === "plank") {
+        m.plank_sec = Math.max(0, Number(m.plank_sec || 105) + delta);
+      } else if (key === "horse_stance") {
+        m.horse_sec = Math.max(0, Number(m.horse_sec || 80) + delta);
+      } else if (key === "peloton_bike") {
+        m.peloton_bike = Math.max(0, Number(m.peloton_bike || 10) + delta);
+      } else if (key === "peloton_stretch") {
+        m.peloton_stretch = Math.max(0, Number(m.peloton_stretch || 10) + delta);
+      } else if (key === "youtube_mins") {
+        m.youtube_mins = Math.max(0, Number(m.youtube_mins || 0) + delta);
+      }
+      renderAll();
+      saveState(true);
+    }
+
+    function slideMetric(key, rawVal) {
+      const day = appState.days[currentDayKey];
+      const m = day.metrics;
+      const v = Number(rawVal);
+      if (key === "pushups_morning") m.pushups_morning = v;
+      else if (key === "pushups_day") m.pushups_day = v;
+      else if (key === "plank") m.plank_sec = v;
+      else if (key === "horse_stance") m.horse_sec = v;
+      else if (key === "peloton_bike") m.peloton_bike = v;
+      else if (key === "peloton_stretch") m.peloton_stretch = v;
+      else if (key === "youtube_mins") m.youtube_mins = v;
+      renderAll();
+      saveState(true);
+    }
+
+    function toggleHoldTimer(key, targetSec) {
+      const day = appState.days[currentDayKey];
+      const m = day.metrics;
+
+      if (activeTimers[key]) {
+        // Stop timer and auto-log
+        clearInterval(activeTimers[key].intervalId);
+        const elapsedSec = Math.max(1, Math.round((Date.now() - activeTimers[key].startMs) / 1000));
+        delete activeTimers[key];
+        if (key === "plank") {
+          m.plank_sec = elapsedSec;
+          showToast(`Plank logged: ${fmtSec(elapsedSec)}`);
+        } else if (key === "horse_stance") {
+          m.horse_sec = elapsedSec;
+          showToast(`Horse Stance logged: ${fmtSec(elapsedSec)}`);
+        }
+        renderAll();
+        saveState(true);
+      } else {
+        // Start timer
+        const startMs = Date.now();
+        const intervalId = setInterval(() => {
+          const btn = document.getElementById(`timer-${key}`);
+          if (btn) {
+            const sec = Math.floor((Date.now() - startMs) / 1000);
+            const passed = sec >= targetSec ? " PR!" : "";
+            btn.textContent = `Stop ${fmtSec(sec)}${passed}`;
+          }
+        }, 250);
+        activeTimers[key] = { startMs, intervalId };
+        renderAll();
+      }
+    }
+
+    function buildMetricRowHTML(key, m) {
+      if (key === "pushups_morning") {
+        const val = Number(m.pushups_morning ?? 100);
+        const sub = val === 100 ? "33/33/34" : "Target 100";
+        return `
+          <div class="metric-control" onclick="event.stopPropagation()">
+            <div class="metric-title">AM Pushups<small>${sub}</small></div>
+            <div class="control-cluster">
+              <button class="step-btn" onclick="stepMetric('pushups_morning', -33)">-</button>
+              <span class="val-pill">${val}</span>
+              <button class="step-btn" onclick="stepMetric('pushups_morning', 33)">+</button>
+              <input class="touch-slider" type="range" min="0" max="150" step="1" value="${val}" oninput="slideMetric('pushups_morning', this.value)" />
+            </div>
+          </div>`;
+      }
+      if (key === "pushups_day") {
+        const val = Number(m.pushups_day ?? 0);
+        return `
+          <div class="metric-control" onclick="event.stopPropagation()">
+            <div class="metric-title">Day Pushups<small>+25 sets</small></div>
+            <div class="control-cluster">
+              <button class="step-btn" onclick="stepMetric('pushups_day', -25)">-</button>
+              <span class="val-pill">${val}</span>
+              <button class="step-btn" onclick="stepMetric('pushups_day', 25)">+</button>
+              <input class="touch-slider" type="range" min="0" max="150" step="25" value="${val}" oninput="slideMetric('pushups_day', this.value)" />
+            </div>
+          </div>`;
+      }
+      if (key === "plank") {
+        const val = Number(m.plank_sec ?? 105);
+        const isRun = Boolean(activeTimers["plank"]);
+        return `
+          <div class="metric-control" onclick="event.stopPropagation()">
+            <div class="metric-title">Plank<small>Base 1:45 · Goal 5:00</small></div>
+            <div class="control-cluster">
+              <button class="step-btn" onclick="stepMetric('plank', -5)">-</button>
+              <span class="val-pill">${fmtSec(val)}</span>
+              <button class="step-btn" onclick="stepMetric('plank', 5)">+</button>
+              <input class="touch-slider" type="range" min="30" max="300" step="5" value="${val}" oninput="slideMetric('plank', this.value)" />
+              <button id="timer-plank" class="timer-btn ${isRun ? 'running' : ''}" onclick="toggleHoldTimer('plank', 105)">
+                ${isRun ? "Stop 0:00" : "Hold"}
+              </button>
+            </div>
+          </div>`;
+      }
+      if (key === "horse_stance") {
+        const val = Number(m.horse_sec ?? 80);
+        const isRun = Boolean(activeTimers["horse_stance"]);
+        return `
+          <div class="metric-control" onclick="event.stopPropagation()">
+            <div class="metric-title">Horse Stance<small>Base 1:20 · Goal 4:00</small></div>
+            <div class="control-cluster">
+              <button class="step-btn" onclick="stepMetric('horse_stance', -5)">-</button>
+              <span class="val-pill">${fmtSec(val)}</span>
+              <button class="step-btn" onclick="stepMetric('horse_stance', 5)">+</button>
+              <input class="touch-slider" type="range" min="20" max="240" step="5" value="${val}" oninput="slideMetric('horse_stance', this.value)" />
+              <button id="timer-horse_stance" class="timer-btn ${isRun ? 'running' : ''}" onclick="toggleHoldTimer('horse_stance', 80)">
+                ${isRun ? "Stop 0:00" : "Hold"}
+              </button>
+            </div>
+          </div>`;
+      }
+      if (key === "peloton_bike") {
+        const val = Number(m.peloton_bike ?? 10);
+        return `
+          <div class="metric-control" onclick="event.stopPropagation()">
+            <div class="metric-title">Peloton Ride<small>Min 10m</small></div>
+            <div class="control-cluster">
+              <button class="step-btn" onclick="stepMetric('peloton_bike', -5)">-</button>
+              <span class="val-pill">${val}m</span>
+              <button class="step-btn" onclick="stepMetric('peloton_bike', 5)">+</button>
+              <input class="touch-slider" type="range" min="0" max="45" step="5" value="${val}" oninput="slideMetric('peloton_bike', this.value)" />
+            </div>
+          </div>`;
+      }
+      if (key === "peloton_stretch") {
+        const val = Number(m.peloton_stretch ?? 10);
+        return `
+          <div class="metric-control" onclick="event.stopPropagation()">
+            <div class="metric-title">Stretch<small>Min 10m</small></div>
+            <div class="control-cluster">
+              <button class="step-btn" onclick="stepMetric('peloton_stretch', -5)">-</button>
+              <span class="val-pill">${val}m</span>
+              <button class="step-btn" onclick="stepMetric('peloton_stretch', 5)">+</button>
+              <input class="touch-slider" type="range" min="0" max="30" step="5" value="${val}" oninput="slideMetric('peloton_stretch', this.value)" />
+            </div>
+          </div>`;
+      }
+      if (key === "youtube_mins") {
+        const val = Number(m.youtube_mins ?? 0);
+        return `
+          <div class="metric-control" onclick="event.stopPropagation()">
+            <div class="metric-title">YT Editing<small>Session mins</small></div>
+            <div class="control-cluster">
+              <button class="step-btn" onclick="stepMetric('youtube_mins', -15)">-</button>
+              <span class="val-pill">${val}m</span>
+              <button class="step-btn" onclick="stepMetric('youtube_mins', 15)">+</button>
+              <input class="touch-slider" type="range" min="0" max="180" step="15" value="${val}" oninput="slideMetric('youtube_mins', this.value)" />
+            </div>
+          </div>`;
+      }
+      return "";
+    }
+
+    function renderAll() {
+      if (!appState || !appState.days[currentDayKey]) return;
+      const day = appState.days[currentDayKey];
+
+      document.getElementById("dayTitle").textContent = day.label;
+      const done = day.blocks.filter(b => b.completed).length;
+      document.getElementById("progressPill").textContent = `${done}/${day.blocks.length}`;
+
+      // Day Selector dropdown
+      const sel = document.getElementById("daySelect");
+      sel.innerHTML = "";
+      Object.entries(appState.days).forEach(([k, d]) => {
+        const opt = document.createElement("option");
+        opt.value = k;
+        opt.textContent = `${d.label} (${d.dayType})`;
+        if (k === currentDayKey) opt.selected = true;
+        sel.appendChild(opt);
+      });
+
+      // 10-Row Bubble List
+      const list = document.getElementById("bubbleList");
+      list.innerHTML = "";
+
+      day.blocks.forEach((b, idx) => {
+        const rowEl = document.createElement("div");
+        rowEl.className = "bubble-row" + (b.completed ? " completed" : "");
+
+        const mKeys = (b.metricKeys || []).filter(k => k !== "peloton_ab");
+        let metricsHTML = "";
+        if (mKeys.length > 0) {
+          const inner = mKeys.map(k => buildMetricRowHTML(k, day.metrics)).join("");
+          metricsHTML = `<div class="inline-metrics">${inner}</div>`;
+        }
+
+        rowEl.innerHTML = `
+          <div class="row-main" onclick="toggleBlock(${idx})">
+            <div class="bubble-circle">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="row-text">
+              <div class="row-line">
+                <span class="time-str">${b.time}</span>
+                <span class="task-str">${b.task}</span>
+              </div>
+            </div>
+          </div>
+          ${metricsHTML}
+        `;
+        list.appendChild(rowEl);
+      });
+
+      // Render Full-App Goal Projections
+      const goalGrid = document.getElementById("goalGrid");
+      if (goalGrid && appState.goals) {
+        goalGrid.innerHTML = appState.goals.map(g => `
+          <div class="goal-box">
+            <div class="goal-box-name">${g.name}</div>
+            <div class="goal-box-nums">${g.baselineDisplay} -> ${g.targetDisplay}</div>
+            <div class="goal-box-pace">${g.pace}</div>
+          </div>
+        `).join("");
+      }
+
+      // Render Backlog
+      renderBacklog();
+    }
+
+    function renderBacklog() {
+      const items = (appState.backlog || []).filter(x => x.status !== "Completed");
+      document.getElementById("backlogCount").textContent = items.length;
+      const tiers = ["This week", "This month", "YouTube", "Bigger projects", "Computer Tasks", "General To Do"];
+      const tf = document.getElementById("tierFilter");
+      tf.innerHTML = tiers.map(t => `
+        <span class="tier-chip ${t === activeTier ? 'active' : ''}" onclick="activeTier='${t}';renderBacklog()">${t}</span>
+      `).join("");
+
+      const filtered = items.filter(x => x.tier === activeTier);
+      const bl = document.getElementById("backlogList");
+      bl.innerHTML = filtered.map(x => `
+        <div class="backlog-item">
+          <span>${x.starred ? "[*] " : ""}${x.title} <small style="color:var(--text-dim)">(${x.env})</small></span>
+          <button class="step-btn" style="width:auto;padding:0 8px;font-size:11px;" onclick="completeBacklogItem('${x.id}')">Done</button>
+        </div>
+      `).join("");
+    }
+
+    function completeBacklogItem(id) {
+      const item = (appState.backlog || []).find(x => x.id === id);
+      if (item) {
+        item.status = "Completed";
+        renderBacklog();
+        saveState(false);
+      }
+    }
+
+    function togglePanel(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle("open");
+    }
+
+    function openAddModal() {
+      document.getElementById("addModal").classList.add("open");
+      document.getElementById("newTaskTitle").focus();
+    }
+
+    function closeAddModal() {
+      document.getElementById("addModal").classList.remove("open");
+    }
+
+    function toggleTimeInput(val) {
+      document.getElementById("newTaskTime").style.display = val === "today" ? "block" : "none";
+    }
+
+    function submitQuickAdd() {
+      const title = document.getElementById("newTaskTitle").value.trim();
+      const bucket = document.getElementById("newTaskBucket").value;
+      const timeStr = document.getElementById("newTaskTime").value.trim() || "3:15 - 5:00 PM";
+      if (!title) return;
+
+      if (bucket === "today") {
+        const day = appState.days[currentDayKey];
+        day.blocks.push({
+          row: day.blocks.length + 1,
+          time: timeStr,
+          task: title,
+          completed: false,
+          metricKeys: []
+        });
+      } else {
+        appState.backlog = appState.backlog || [];
+        appState.backlog.unshift({
+          id: "T-" + Date.now().toString().slice(-4),
+          tier: bucket,
+          title: title,
+          starred: true,
+          env: "Indoor",
+          status: "Active"
+        });
+        activeTier = bucket;
+      }
+
+      document.getElementById("newTaskTitle").value = "";
+      closeAddModal();
+      renderAll();
+      saveState(false);
+    }
+
+    async function saveState(silent = false) {
+      if (typeof google !== "undefined" && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function() {
+          if (!silent) showToast("Saved to Google Sheet");
+        }).writeLiveState(appState);
+        return;
+      }
+      try {
+        await fetch("/api/state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(appState)
+        });
+        if (!silent) showToast("Saved");
+      } catch (e) {
+        if (!silent) showToast("Saved locally");
+      }
+    }
+
+    async function syncToSheetDB() {
+      showToast("Syncing to Google Sheet DB...");
+      if (typeof google !== "undefined" && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function(res) {
+          if (res && res.ok) showToast("Synced to Google Sheet Database");
+          else showToast("Sync error");
+        }).syncDayToDatabaseTabs(currentDayKey, appState);
+        return;
+      }
+      await saveState(true);
+      try {
+        const res = await fetch("/api/log-sheet", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dayKey: currentDayKey })
+        });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          showToast("Synced to Google Sheet Database");
+        } else {
+          showToast("Sync failed");
+        }
+      } catch (e) {
+        showToast("Server offline");
+      }
+    }
+
+    loadState();
+  </script>
+</body>
+</html>

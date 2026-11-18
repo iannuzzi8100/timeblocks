@@ -1,0 +1,73 @@
+[
+  {
+    "op": "write",
+    "range": "Goals_DB!A1",
+    "data": [
+      ["Metric_Key", "Display_Name", "Unit", "Start_Baseline", "Current_Baseline", "Q1_2027_Target", "Q2_2027_Target", "Q3_2027_Target", "End_2027_Goal", "Step_Increment", "Status_Note"],
+      ["pushups_morning", "Morning Pushups", "reps", "100 (5x20)", "100 (33/33/34)", "100 (4x25)", "100 (33/33/34)", "100 (33/33/34)", "100 (33/33/34)", "33", "2027 Consolidation Goal Achieved Early (11/13/2026)"],
+      ["pushups_day", "Throughout-Day Pushups", "reps", "0", "50", "50", "75", "100", "100", "25", "Active secondary volume building"],
+      ["plank", "Daily Plank Hold", "mm:ss", "1:00", "1:45", "1:45", "2:30", "3:30", "5:00", "5s", "Q1 2027 Milestone (1:45) Achieved Early (11/03/2026)"],
+      ["horse_stance", "Daily Horse Stance", "mm:ss", "0:30", "1:20", "1:00", "2:00", "3:00", "4:00", "5s", "Exceeded Q1 2027 Milestone (1:20 PR on 11/16/2026)"],
+      ["peloton_bike", "Peloton Bike Ride", "mins", "10", "10", "10", "15", "20", "20", "5m", "Daily non-negotiable post-dog walk ride"],
+      ["peloton_stretch", "Peloton Post-Ride Stretch", "mins", "10", "10", "10", "10", "15", "15", "5m", "Daily mobility & recovery"],
+      ["peloton_ab", "Peloton Ab / Core Workouts", "classes/wk", "2", "2", "3", "4", "5", "7", "1", "Tue & Thu schedule anchor"],
+      ["youtube_buffer", "YouTube Scheduled Buffer", "weeks", "0", "1", "4", "4", "4", "4", "1", "1st Sat Long-form, other Sats Shorts (8:00 AM)"]
+    ]
+  },
+  {
+    "op": "write",
+    "range": "Backlog_DB!A1",
+    "data": [
+      ["Task_ID", "Tier", "Title", "Starred", "Environment", "Status", "Created_Date", "Completed_Date", "Notes"],
+      ["T-001", "This week", "Cap sprinkler head by power pole", "TRUE", "Outdoor", "Active", "2026-11-15", "", "Property maintenance"],
+      ["T-002", "This week", "Charge ring camera", "TRUE", "Indoor", "Active", "2026-11-15", "", "Quick house task"],
+      ["T-003", "This week", "Get dog pics for mom Christmas present", "TRUE", "Indoor", "Active", "2026-11-15", "", "Family gift prep"],
+      ["T-004", "This week", "Clean living room / kitchen / bathroom", "FALSE", "Indoor", "Active", "2026-11-15", "", "House reset"],
+      ["T-005", "This month", "Nov YouTube Short #2 (Cut, Captions & Schedule for Sat 11/21 8am)", "TRUE", "Indoor", "Active", "2026-11-01", "", "Release Sat 11/21"],
+      ["T-006", "This month", "Organize trailer (layout, build hose reel holder, plumb, install shelves)", "TRUE", "Outdoor", "Active", "2026-11-01", "", "Sud Studs setup"],
+      ["T-007", "This month", "Move pressure washer trailer", "TRUE", "Outdoor", "Active", "2026-10-15", "", "Sud Studs staging"],
+      ["T-008", "This month", "Make wooden arms for side of shed", "FALSE", "Outdoor", "Active", "2026-10-20", "", "Shop woodworking"],
+      ["T-009", "This month", "Put garbage motor in", "FALSE", "Indoor", "Active", "2026-11-01", "", "Monthly maintenance"],
+      ["T-010", "This month", "Get trailer ready for sale / take pics / write ad", "FALSE", "Outdoor", "Active", "2026-11-01", "", "Trailer sale"],
+      ["T-011", "This month", "Pressure wash Linda's driveways", "FALSE", "Outdoor", "Active", "2026-11-01", "", "Sud Studs job"],
+      ["T-012", "YouTube", "Short Idea: Sliding gate", "TRUE", "Indoor", "Active", "2026-10-15", "", "Shorts pipeline"],
+      ["T-013", "YouTube", "Short Idea: Hiking", "TRUE", "Indoor", "Active", "2026-10-15", "", "Shorts pipeline"],
+      ["T-014", "YouTube", "Short Idea: Lean-to", "FALSE", "Indoor", "Active", "2026-10-15", "", "Shorts pipeline"],
+      ["T-015", "YouTube", "Long-Form: Privacy Fence", "TRUE", "Indoor", "Active", "2026-10-15", "", "1st Saturday long-form candidate"],
+      ["T-016", "YouTube", "Long-Form: Garage organization pt 2", "FALSE", "Indoor", "Active", "2026-10-15", "", "Long-form pipeline"],
+      ["T-017", "YouTube", "Long-Form: Making weights / Shower / Lattice bench / Sideyard / Dee's van", "FALSE", "Indoor", "Active", "2026-10-15", "", "Long-form backlog"],
+      ["T-018", "YouTube", "Series: Side Hustle Series (The first customers)", "FALSE", "Indoor", "Active", "2026-10-15", "", "Sud Studs series"],
+      ["T-019", "Bigger projects", "Finish shower walkway", "TRUE", "Outdoor", "Active", "2026-10-25", "", "Active Saturday 4-hour deep work build"],
+      ["T-020", "Bigger projects", "Do rock wall on lean-to (order material, buy welder)", "FALSE", "Outdoor", "Active", "2026-10-15", "", "Next major outdoor build"],
+      ["T-021", "Bigger projects", "Make farmers carry weights & weight plates", "FALSE", "Outdoor", "Active", "2026-10-15", "", "Shop build"],
+      ["T-022", "Bigger projects", "Paint garage floor & shower pad", "FALSE", "Outdoor", "Active", "2026-10-15", "", "Dry weather required"],
+      ["T-023", "Bigger projects", "Install soffit lighting & build french cleat wall", "FALSE", "Outdoor", "Active", "2026-10-15", "", "Property / shop upgrade"],
+      ["T-024", "Bigger projects", "Redo office into reading room", "FALSE", "Indoor", "Active", "2026-10-15", "", "Rainy weekend project"],
+      ["T-025", "Computer Tasks", "Draw CAD model of lean-to", "TRUE", "Indoor", "Active", "2026-10-15", "", "Scheduled Thu PM"],
+      ["T-026", "Computer Tasks", "Create MWI for lean-to", "TRUE", "Indoor", "Active", "2026-10-15", "", "Scheduled Sun PM"],
+      ["T-027", "Computer Tasks", "Make recipe book", "FALSE", "Indoor", "Active", "2026-10-15", "", "Ongoing digital project"],
+      ["T-028", "Computer Tasks", "Draw CAD of lattice bench", "FALSE", "Indoor", "Active", "2026-10-15", "", "CAD queue"],
+      ["T-029", "Computer Tasks", "Look for a golf cart", "FALSE", "Indoor", "Active", "2026-10-15", "", "Research"],
+      ["T-030", "General To Do", "Sharpen edger / Fix drip in washer / Fix outdoor shower", "FALSE", "Indoor", "Active", "2026-10-15", "", "Home maintenance"],
+      ["T-031", "General To Do", "Update drone / Circuit breaker list / Get kitchen dimensions", "FALSE", "Indoor", "Active", "2026-10-15", "", "General admin"],
+      ["T-032", "General To Do", "Dermatology appt / Schedule a vasectomy", "FALSE", "Indoor", "Active", "2026-10-15", "", "Medical appointments"]
+    ]
+  },
+  {
+    "op": "write",
+    "range": "Timeblocks_DB!A1",
+    "data": [
+      ["Date", "Day_Label", "Row_Num", "Time_Range", "Task_Title", "Completed", "Metrics_Summary", "Updated_At"],
+      ["2026-11-18", "Wednesday 11/18", "1", "4:20 - 5:15 AM", "Morning Routine (Feed Dogs, Stretch, 100 Pushups 33/33/34, 1:45 Plank, 1:20 Horse Stance, Coffee)", "TRUE", "AM Pushups: 100 (33/33/34) | Plank: 1:45 | Horse: 1:20", "2026-11-18T05:15:00"],
+      ["2026-11-18", "Wednesday 11/18", "2", "5:15 - 6:00 AM", "Commute to Work", "TRUE", "", "2026-11-18T06:00:00"],
+      ["2026-11-18", "Wednesday 11/18", "3", "6:00 AM - 2:30 PM", "Work", "TRUE", "Day Pushups: 0", "2026-11-18T14:30:00"],
+      ["2026-11-18", "Wednesday 11/18", "4", "2:30 - 3:15 PM", "Commute Home", "TRUE", "", "2026-11-18T15:15:00"],
+      ["2026-11-18", "Wednesday 11/18", "5", "3:15 - 4:30 PM", "YouTube Production: Finalize Cut, Captions & Sound Design for Nov Short #2", "FALSE", "YT Edit: 75m", ""],
+      ["2026-11-18", "Wednesday 11/18", "6", "4:30 - 5:00 PM", "Sud Studs Prep: Trailer Layout & Shelf Sizing Assessment", "FALSE", "", ""],
+      ["2026-11-18", "Wednesday 11/18", "7", "5:15 - 6:00 PM", "Dinner (5:15 - 5:45 PM) & Feed Dogs (5:45 - 6:00 PM)", "FALSE", "", ""],
+      ["2026-11-18", "Wednesday 11/18", "8", "6:00 - 6:35 PM", "Walk Dogs (Walking Off Dinner)", "FALSE", "", ""],
+      ["2026-11-18", "Wednesday 11/18", "9", "6:35 - 7:20 PM", "Peloton 10m Ride + 10m Stretch & 7:05 PM Evening Check-In", "FALSE", "Bike: 10m | Stretch: 10m | Ab: Off", ""],
+      ["2026-11-18", "Wednesday 11/18", "10", "8:30 PM", "Wind Down & Sleep", "FALSE", "", ""]
+    ]
+  }
+]
