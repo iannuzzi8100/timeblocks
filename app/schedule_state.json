@@ -1,7 +1,8 @@
 {
-  "activeDay": "2026-11-18",
+  "activeDay": "2026-11-19",
   "weekTitle": "Week of Mon 11/16 - Sun 11/22, 2026",
   "weatherSummary": "South Patrick Shores, FL: Breezy with scattered afternoon showers/storms Tue-Fri (74-75F); clearing to sunny fall weather Sat-Sun (73-76F).",
+  "pushupSetConfig": [33, 33, 34],
   "goals": [
     {
       "key": "pushups_morning",
@@ -57,262 +58,38 @@
     }
   ],
   "backlog": [
-    {
-      "id": "T-001",
-      "tier": "This week",
-      "title": "Cap sprinkler head by power pole",
-      "starred": true,
-      "env": "Outdoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-002",
-      "tier": "This week",
-      "title": "Charge ring camera",
-      "starred": true,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-003",
-      "tier": "This week",
-      "title": "Get dog pics for mom Christmas present",
-      "starred": true,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-004",
-      "tier": "This week",
-      "title": "Clean living room / kitchen / bathroom",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-005",
-      "tier": "This month",
-      "title": "Nov YouTube Short #2 (Cut, Captions & Schedule for Sat 11/21 8am)",
-      "starred": true,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-006",
-      "tier": "This month",
-      "title": "Organize trailer (layout, build hose reel holder, plumb, install shelves)",
-      "starred": true,
-      "env": "Outdoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-007",
-      "tier": "This month",
-      "title": "Move pressure washer trailer",
-      "starred": true,
-      "env": "Outdoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-008",
-      "tier": "This month",
-      "title": "Make wooden arms for side of shed",
-      "starred": false,
-      "env": "Outdoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-009",
-      "tier": "This month",
-      "title": "Put garbage motor in",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-010",
-      "tier": "This month",
-      "title": "Get trailer ready for sale / take pics / write ad",
-      "starred": false,
-      "env": "Outdoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-011",
-      "tier": "This month",
-      "title": "Pressure wash Linda's driveways",
-      "starred": false,
-      "env": "Outdoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-012",
-      "tier": "YouTube",
-      "title": "Short Idea: Sliding gate",
-      "starred": true,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-013",
-      "tier": "YouTube",
-      "title": "Short Idea: Hiking",
-      "starred": true,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-014",
-      "tier": "YouTube",
-      "title": "Short Idea: Lean-to",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-015",
-      "tier": "YouTube",
-      "title": "Long-Form: Privacy Fence",
-      "starred": true,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-016",
-      "tier": "YouTube",
-      "title": "Long-Form: Garage organization pt 2",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-017",
-      "tier": "YouTube",
-      "title": "Long-Form: Making weights / Shower / Lattice bench / Sideyard / Dee's van",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-018",
-      "tier": "YouTube",
-      "title": "Series: Side Hustle Series (The first customers)",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-019",
-      "tier": "Bigger projects",
-      "title": "Finish shower walkway",
-      "starred": true,
-      "env": "Outdoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-020",
-      "tier": "Bigger projects",
-      "title": "Do rock wall on lean-to (order material, buy welder)",
-      "starred": false,
-      "env": "Outdoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-021",
-      "tier": "Bigger projects",
-      "title": "Make farmers carry weights & weight plates",
-      "starred": false,
-      "env": "Outdoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-022",
-      "tier": "Bigger projects",
-      "title": "Paint garage floor & shower pad",
-      "starred": false,
-      "env": "Outdoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-023",
-      "tier": "Bigger projects",
-      "title": "Install soffit lighting & build french cleat wall",
-      "starred": false,
-      "env": "Outdoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-024",
-      "tier": "Bigger projects",
-      "title": "Redo office into reading room",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-025",
-      "tier": "Computer Tasks",
-      "title": "Draw CAD model of lean-to",
-      "starred": true,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-026",
-      "tier": "Computer Tasks",
-      "title": "Create MWI for lean-to",
-      "starred": true,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-027",
-      "tier": "Computer Tasks",
-      "title": "Make recipe book",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-028",
-      "tier": "Computer Tasks",
-      "title": "Draw CAD of lattice bench",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-029",
-      "tier": "Computer Tasks",
-      "title": "Look for a golf cart",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-030",
-      "tier": "General To Do",
-      "title": "Sharpen edger / Fix drip in washer / Fix outdoor shower",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-031",
-      "tier": "General To Do",
-      "title": "Update drone / Circuit breaker list / Get kitchen dimensions",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    },
-    {
-      "id": "T-032",
-      "tier": "General To Do",
-      "title": "Dermatology appt / Schedule a vasectomy",
-      "starred": false,
-      "env": "Indoor",
-      "status": "Active"
-    }
+    {"id": "T-001", "tier": "This week", "title": "Cap sprinkler head by power pole", "starred": true, "env": "Outdoor", "status": "Active"},
+    {"id": "T-002", "tier": "This week", "title": "Charge ring camera", "starred": true, "env": "Indoor", "status": "Active"},
+    {"id": "T-003", "tier": "This week", "title": "Get dog pics for mom Christmas present", "starred": true, "env": "Indoor", "status": "Active"},
+    {"id": "T-004", "tier": "This week", "title": "Clean living room / kitchen / bathroom", "starred": false, "env": "Indoor", "status": "Active"},
+    {"id": "T-005", "tier": "This month", "title": "Nov YouTube Short #2 (Cut, Captions & Schedule for Sat 11/21 8am)", "starred": true, "env": "Indoor", "status": "Active"},
+    {"id": "T-006", "tier": "This month", "title": "Organize trailer (layout, build hose reel holder, plumb, install shelves)", "starred": true, "env": "Outdoor", "status": "Active"},
+    {"id": "T-007", "tier": "This month", "title": "Move pressure washer trailer", "starred": true, "env": "Outdoor", "status": "Active"},
+    {"id": "T-008", "tier": "This month", "title": "Make wooden arms for side of shed", "starred": false, "env": "Outdoor", "status": "Active"},
+    {"id": "T-009", "tier": "This month", "title": "Put garbage motor in", "starred": false, "env": "Indoor", "status": "Active"},
+    {"id": "T-010", "tier": "This month", "title": "Get trailer ready for sale / take pics / write ad", "starred": false, "env": "Outdoor", "status": "Active"},
+    {"id": "T-011", "tier": "This month", "title": "Pressure wash Linda's driveways", "starred": false, "env": "Outdoor", "status": "Active"},
+    {"id": "T-012", "tier": "YouTube", "title": "Short Idea: Sliding gate", "starred": true, "env": "Indoor", "status": "Active"},
+    {"id": "T-013", "tier": "YouTube", "title": "Short Idea: Hiking", "starred": true, "env": "Indoor", "status": "Active"},
+    {"id": "T-014", "tier": "YouTube", "title": "Short Idea: Lean-to", "starred": false, "env": "Indoor", "status": "Active"},
+    {"id": "T-015", "tier": "YouTube", "title": "Long-Form: Privacy Fence", "starred": true, "env": "Indoor", "status": "Active"},
+    {"id": "T-016", "tier": "YouTube", "title": "Long-Form: Garage organization pt 2", "starred": false, "env": "Indoor", "status": "Active"},
+    {"id": "T-017", "tier": "YouTube", "title": "Long-Form: Making weights / Shower / Lattice bench / Sideyard / Dee's van", "starred": false, "env": "Indoor", "status": "Active"},
+    {"id": "T-018", "tier": "YouTube", "title": "Series: Side Hustle Series (The first customers)", "starred": false, "env": "Indoor", "status": "Active"},
+    {"id": "T-019", "tier": "Bigger projects", "title": "Finish shower walkway", "starred": true, "env": "Outdoor", "status": "Active"},
+    {"id": "T-020", "tier": "Bigger projects", "title": "Do rock wall on lean-to (order material, buy welder)", "starred": false, "env": "Outdoor", "status": "Active"},
+    {"id": "T-021", "tier": "Bigger projects", "title": "Make farmers carry weights & weight plates", "starred": false, "env": "Outdoor", "status": "Active"},
+    {"id": "T-022", "tier": "Bigger projects", "title": "Paint garage floor & shower pad", "starred": false, "env": "Outdoor", "status": "Active"},
+    {"id": "T-023", "tier": "Bigger projects", "title": "Install soffit lighting & build french cleat wall", "starred": false, "env": "Outdoor", "status": "Active"},
+    {"id": "T-024", "tier": "Bigger projects", "title": "Redo office into reading room", "starred": false, "env": "Indoor", "status": "Active"},
+    {"id": "T-025", "tier": "Computer Tasks", "title": "Draw CAD model of lean-to", "starred": true, "env": "Indoor", "status": "Active"},
+    {"id": "T-026", "tier": "Computer Tasks", "title": "Create MWI for lean-to", "starred": true, "env": "Indoor", "status": "Active"},
+    {"id": "T-027", "tier": "Computer Tasks", "title": "Make recipe book", "starred": false, "env": "Indoor", "status": "Active"},
+    {"id": "T-028", "tier": "Computer Tasks", "title": "Draw CAD of lattice bench", "starred": false, "env": "Indoor", "status": "Active"},
+    {"id": "T-029", "tier": "Computer Tasks", "title": "Look for a golf cart", "starred": false, "env": "Indoor", "status": "Active"},
+    {"id": "T-030", "tier": "General To Do", "title": "Sharpen edger / Fix drip in washer / Fix outdoor shower", "starred": false, "env": "Indoor", "status": "Active"},
+    {"id": "T-031", "tier": "General To Do", "title": "Update drone / Circuit breaker list / Get kitchen dimensions", "starred": false, "env": "Indoor", "status": "Active"},
+    {"id": "T-032", "tier": "General To Do", "title": "Dermatology appt / Schedule a vasectomy", "starred": false, "env": "Indoor", "status": "Active"}
   ],
   "days": {
     "2026-11-18": {
@@ -321,92 +98,30 @@
       "dayType": "Workday",
       "focus": "YouTube Short #2 Final Cut & Captions + Sud Studs Trailer Layout",
       "blocks": [
-        {
-          "row": 1,
-          "time": "4:20 - 5:15 AM",
-          "task": "Morning Routine (Dogs, Stretch, Pushups, Plank, Horse Stance, Coffee)",
-          "completed": true,
-          "metricKeys": [
-            "pushups_morning",
-            "plank",
-            "horse_stance"
-          ]
-        },
-        {
-          "row": 2,
-          "time": "5:15 - 6:00 AM",
-          "task": "Commute to Work",
-          "completed": true,
-          "metricKeys": []
-        },
-        {
-          "row": 3,
-          "time": "6:00 AM - 2:30 PM",
-          "task": "Work",
-          "completed": true,
-          "metricKeys": [
-            "pushups_day"
-          ]
-        },
-        {
-          "row": 4,
-          "time": "2:30 - 3:15 PM",
-          "task": "Commute Home",
-          "completed": true,
-          "metricKeys": []
-        },
-        {
-          "row": 5,
-          "time": "3:15 - 4:30 PM",
-          "task": "YouTube: Finalize Cut, Captions & Sound for Nov Short #2",
-          "completed": false,
-          "metricKeys": [
-            "youtube_mins"
-          ]
-        },
-        {
-          "row": 6,
-          "time": "4:30 - 5:00 PM",
-          "task": "Sud Studs Prep: Trailer Layout & Shelf Sizing Assessment",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 7,
-          "time": "5:15 - 6:00 PM",
-          "task": "Dinner (5:15) & Feed Dogs (5:45)",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 8,
-          "time": "6:00 - 6:35 PM",
-          "task": "Walk Dogs (Walking Off Dinner)",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 9,
-          "time": "6:35 - 7:20 PM",
-          "task": "Peloton 10m Ride + 10m Stretch & 7:05 PM Check-In",
-          "completed": false,
-          "metricKeys": [
-            "peloton_bike",
-            "peloton_stretch"
-          ]
-        },
-        {
-          "row": 10,
-          "time": "8:30 PM",
-          "task": "Wind Down & Sleep",
-          "completed": false,
-          "metricKeys": []
-        }
+        {"row": 1, "time": "4:20 - 4:30 AM", "task": "Feed Dogs", "completed": true, "metricKeys": []},
+        {"row": 2, "time": "4:30 - 4:50 AM", "task": "Morning Stretch (20m)", "completed": true, "metricKeys": []},
+        {"row": 3, "time": "4:50 - 5:00 AM", "task": "Pushups", "completed": true, "metricKeys": ["pushups"]},
+        {"row": 4, "time": "5:00 - 5:03 AM", "task": "Plank Hold", "completed": true, "metricKeys": ["plank"]},
+        {"row": 5, "time": "5:03 - 5:06 AM", "task": "Horse Stance Hold", "completed": true, "metricKeys": ["horse_stance"]},
+        {"row": 6, "time": "5:06 - 5:15 AM", "task": "Morning Coffee & Light Reading", "completed": true, "metricKeys": []},
+        {"row": 7, "time": "5:15 - 6:00 AM", "task": "Commute to Work", "completed": true, "metricKeys": []},
+        {"row": 8, "time": "6:00 AM - 2:30 PM", "task": "Work", "completed": true, "metricKeys": []},
+        {"row": 9, "time": "2:30 - 3:15 PM", "task": "Commute Home", "completed": true, "metricKeys": []},
+        {"row": 10, "time": "3:15 - 4:30 PM", "task": "YouTube: Finalize Cut, Captions & Sound for Nov Short #2", "completed": false, "metricKeys": ["youtube_mins"]},
+        {"row": 11, "time": "4:30 - 5:00 PM", "task": "Sud Studs Prep: Trailer Layout & Shelf Sizing Assessment", "completed": false, "metricKeys": []},
+        {"row": 12, "time": "5:15 - 5:45 PM", "task": "Dinner", "completed": false, "metricKeys": []},
+        {"row": 13, "time": "5:45 - 6:00 PM", "task": "Feed Dogs", "completed": false, "metricKeys": []},
+        {"row": 14, "time": "6:00 - 6:35 PM", "task": "Walk Dogs (Walking Off Dinner)", "completed": false, "metricKeys": []},
+        {"row": 15, "time": "6:35 - 6:45 PM", "task": "Peloton Bike Ride", "completed": false, "metricKeys": ["peloton_bike"]},
+        {"row": 16, "time": "6:45 - 6:55 PM", "task": "Peloton Post-Ride Stretch", "completed": false, "metricKeys": ["peloton_stretch"]},
+        {"row": 17, "time": "7:05 - 7:20 PM", "task": "Daily Evening Check-In", "completed": false, "metricKeys": []},
+        {"row": 18, "time": "8:30 PM", "task": "Wind Down & Sleep", "completed": false, "metricKeys": []}
       ],
       "metrics": {
+        "pushup_sets_done": [true, true, true],
+        "pushup_extra_log": [15],
         "pushups_morning": 100,
-        "pushups_morning_sets": "33/33/34",
-        "pushups_day": 0,
+        "pushups_day": 15,
         "plank_sec": 105,
         "horse_sec": 80,
         "peloton_bike": 10,
@@ -422,98 +137,36 @@
       "dayType": "Workday",
       "focus": "Schedule Nov Short #2 in YouTube Studio + Lean-to CAD Model + Peloton Ab #2",
       "blocks": [
-        {
-          "row": 1,
-          "time": "4:20 - 5:15 AM",
-          "task": "Morning Routine (Dogs, Stretch, Pushups, Plank, Horse Stance, Coffee)",
-          "completed": false,
-          "metricKeys": [
-            "pushups_morning",
-            "plank",
-            "horse_stance"
-          ]
-        },
-        {
-          "row": 2,
-          "time": "5:15 - 6:00 AM",
-          "task": "Commute to Work",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 3,
-          "time": "6:00 AM - 2:30 PM",
-          "task": "Work",
-          "completed": false,
-          "metricKeys": [
-            "pushups_day"
-          ]
-        },
-        {
-          "row": 4,
-          "time": "2:30 - 3:15 PM",
-          "task": "Commute Home",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 5,
-          "time": "3:15 - 4:15 PM",
-          "task": "YouTube Studio: Schedule Nov Short #2 for Sat 8:00 AM Premiere",
-          "completed": false,
-          "metricKeys": [
-            "youtube_mins"
-          ]
-        },
-        {
-          "row": 6,
-          "time": "4:15 - 5:00 PM",
-          "task": "Computer Tasks: Draw CAD Model of Lean-to & Recipe Book",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 7,
-          "time": "5:15 - 6:00 PM",
-          "task": "Dinner (5:15) & Feed Dogs (5:45)",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 8,
-          "time": "6:00 - 6:35 PM",
-          "task": "Walk Dogs (Walking Off Dinner)",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 9,
-          "time": "6:35 - 7:20 PM",
-          "task": "Peloton 10m Ride + 10m Stretch + Ab Workout #2 & Check-In",
-          "completed": false,
-          "metricKeys": [
-            "peloton_bike",
-            "peloton_stretch",
-            "peloton_ab"
-          ]
-        },
-        {
-          "row": 10,
-          "time": "8:30 PM",
-          "task": "Wind Down & Sleep",
-          "completed": false,
-          "metricKeys": []
-        }
+        {"row": 1, "time": "4:20 - 4:30 AM", "task": "Feed Dogs", "completed": true, "metricKeys": []},
+        {"row": 2, "time": "4:30 - 4:50 AM", "task": "Morning Stretch (20m)", "completed": true, "metricKeys": []},
+        {"row": 3, "time": "4:50 - 5:00 AM", "task": "Pushups", "completed": true, "metricKeys": ["pushups"]},
+        {"row": 4, "time": "5:00 - 5:03 AM", "task": "Plank Hold", "completed": true, "metricKeys": ["plank"]},
+        {"row": 5, "time": "5:03 - 5:06 AM", "task": "Horse Stance Hold", "completed": true, "metricKeys": ["horse_stance"]},
+        {"row": 6, "time": "5:06 - 5:15 AM", "task": "Morning Coffee & Light Reading", "completed": true, "metricKeys": []},
+        {"row": 7, "time": "5:15 - 6:00 AM", "task": "Commute to Work", "completed": true, "metricKeys": []},
+        {"row": 8, "time": "6:00 AM - 2:30 PM", "task": "Work", "completed": true, "metricKeys": []},
+        {"row": 9, "time": "2:30 - 3:15 PM", "task": "Commute Home", "completed": true, "metricKeys": []},
+        {"row": 10, "time": "3:15 - 4:15 PM", "task": "YouTube Studio: Schedule Nov Short #2 for Sat 8:00 AM Premiere", "completed": false, "metricKeys": ["youtube_mins"]},
+        {"row": 11, "time": "4:15 - 5:00 PM", "task": "Computer Tasks: Draw CAD Model of Lean-to & Recipe Book", "completed": false, "metricKeys": []},
+        {"row": 12, "time": "5:15 - 5:45 PM", "task": "Dinner", "completed": false, "metricKeys": []},
+        {"row": 13, "time": "5:45 - 6:00 PM", "task": "Feed Dogs", "completed": false, "metricKeys": []},
+        {"row": 14, "time": "6:00 - 6:35 PM", "task": "Walk Dogs (Walking Off Dinner)", "completed": false, "metricKeys": []},
+        {"row": 15, "time": "6:35 - 6:45 PM", "task": "Peloton Bike Ride", "completed": false, "metricKeys": ["peloton_bike"]},
+        {"row": 16, "time": "6:45 - 6:55 PM", "task": "Peloton Post-Ride Stretch", "completed": false, "metricKeys": ["peloton_stretch"]},
+        {"row": 17, "time": "6:55 - 7:05 PM", "task": "Peloton Ab Workout #2 of 2", "completed": false, "metricKeys": ["peloton_ab"]},
+        {"row": 18, "time": "7:05 - 7:20 PM", "task": "Daily Evening Check-In", "completed": false, "metricKeys": []},
+        {"row": 19, "time": "8:30 PM", "task": "Wind Down & Sleep", "completed": false, "metricKeys": []}
       ],
       "metrics": {
+        "pushup_sets_done": [true, true, true],
+        "pushup_extra_log": [],
         "pushups_morning": 100,
-        "pushups_morning_sets": "33/33/34",
         "pushups_day": 0,
         "plank_sec": 105,
         "horse_sec": 80,
         "peloton_bike": 10,
         "peloton_stretch": 10,
-        "peloton_ab": "Completed (Class #2)",
+        "peloton_ab": "10m Core",
         "youtube_mins": 60,
         "notes": ""
       }
@@ -524,89 +177,28 @@
       "dayType": "Off-Day",
       "focus": "Deep Clean Bathroom/Living Areas + Sud Studs Hose Reel & Trailer Shelves",
       "blocks": [
-        {
-          "row": 1,
-          "time": "7:00 - 8:30 AM",
-          "task": "Off-Day Morning Routine (Dogs, Stretch, Pushups, Plank, Horse Stance, Coffee)",
-          "completed": false,
-          "metricKeys": [
-            "pushups_morning",
-            "plank",
-            "horse_stance"
-          ]
-        },
-        {
-          "row": 2,
-          "time": "8:30 - 11:30 AM",
-          "task": "Hospitality & Maintenance: Deep Clean Bathroom & Living Areas",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 3,
-          "time": "11:30 AM - 1:00 PM",
-          "task": "Daytime Buffer & Errand Prep",
-          "completed": false,
-          "metricKeys": [
-            "pushups_day"
-          ]
-        },
-        {
-          "row": 4,
-          "time": "1:00 - 3:00 PM",
-          "task": "Sud Studs Workshop: Build Hose Reel Holder & Frame Trailer Shelves",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 5,
-          "time": "3:00 - 5:00 PM",
-          "task": "Workshop Prep: Stage Shower Walkway Materials & Check Fasteners",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 6,
-          "time": "5:15 - 5:45 PM",
-          "task": "Dinner",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 7,
-          "time": "5:45 - 6:00 PM",
-          "task": "Feed Dogs",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 8,
-          "time": "6:00 - 6:35 PM",
-          "task": "Walk Dogs",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 9,
-          "time": "6:35 - 7:20 PM",
-          "task": "Peloton 10m Ride + 10m Stretch & 7:05 PM Check-In",
-          "completed": false,
-          "metricKeys": [
-            "peloton_bike",
-            "peloton_stretch"
-          ]
-        },
-        {
-          "row": 10,
-          "time": "8:30 PM",
-          "task": "Wind Down & Sleep",
-          "completed": false,
-          "metricKeys": []
-        }
+        {"row": 1, "time": "7:00 - 7:15 AM", "task": "Feed Dogs", "completed": false, "metricKeys": []},
+        {"row": 2, "time": "7:15 - 7:35 AM", "task": "Morning Stretch (20m)", "completed": false, "metricKeys": []},
+        {"row": 3, "time": "7:35 - 7:50 AM", "task": "Pushups", "completed": false, "metricKeys": ["pushups"]},
+        {"row": 4, "time": "7:50 - 7:55 AM", "task": "Plank Hold", "completed": false, "metricKeys": ["plank"]},
+        {"row": 5, "time": "7:55 - 8:00 AM", "task": "Horse Stance Hold", "completed": false, "metricKeys": ["horse_stance"]},
+        {"row": 6, "time": "8:00 - 8:30 AM", "task": "Morning Coffee & Light Reading", "completed": false, "metricKeys": []},
+        {"row": 7, "time": "8:30 - 11:30 AM", "task": "Hospitality & Maintenance: Deep Clean Bathroom & Living Areas", "completed": false, "metricKeys": []},
+        {"row": 8, "time": "11:30 AM - 1:00 PM", "task": "Daytime Buffer & Errand Prep", "completed": false, "metricKeys": []},
+        {"row": 9, "time": "1:00 - 3:00 PM", "task": "Sud Studs Workshop: Build Hose Reel Holder & Frame Trailer Shelves", "completed": false, "metricKeys": []},
+        {"row": 10, "time": "3:00 - 5:00 PM", "task": "Workshop Prep: Stage Shower Walkway Materials & Check Fasteners", "completed": false, "metricKeys": []},
+        {"row": 11, "time": "5:15 - 5:45 PM", "task": "Dinner", "completed": false, "metricKeys": []},
+        {"row": 12, "time": "5:45 - 6:00 PM", "task": "Feed Dogs", "completed": false, "metricKeys": []},
+        {"row": 13, "time": "6:00 - 6:35 PM", "task": "Walk Dogs", "completed": false, "metricKeys": []},
+        {"row": 14, "time": "6:35 - 6:45 PM", "task": "Peloton Bike Ride", "completed": false, "metricKeys": ["peloton_bike"]},
+        {"row": 15, "time": "6:45 - 6:55 PM", "task": "Peloton Post-Ride Stretch", "completed": false, "metricKeys": ["peloton_stretch"]},
+        {"row": 16, "time": "7:05 - 7:20 PM", "task": "Daily Evening Check-In", "completed": false, "metricKeys": []},
+        {"row": 17, "time": "8:30 PM", "task": "Wind Down & Sleep", "completed": false, "metricKeys": []}
       ],
       "metrics": {
-        "pushups_morning": 100,
-        "pushups_morning_sets": "33/33/34",
+        "pushup_sets_done": [false, false, false],
+        "pushup_extra_log": [],
+        "pushups_morning": 0,
         "pushups_day": 0,
         "plank_sec": 105,
         "horse_sec": 80,
@@ -623,89 +215,29 @@
       "dayType": "Premiere & Build",
       "focus": "8:00 AM Nov Short #2 Drops + 4-Hour Deep Work: Finish Shower Walkway Build",
       "blocks": [
-        {
-          "row": 1,
-          "time": "7:00 - 8:00 AM",
-          "task": "Off-Day Morning Routine (Dogs, Pushups, Plank, Horse Stance, Coffee)",
-          "completed": false,
-          "metricKeys": [
-            "pushups_morning",
-            "plank",
-            "horse_stance"
-          ]
-        },
-        {
-          "row": 2,
-          "time": "8:00 - 8:30 AM",
-          "task": "YouTube Premiere: November YouTube Short #2 Drops",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 3,
-          "time": "8:30 AM - 12:30 PM",
-          "task": "4-Hour Deep Work Window: Finish Shower Walkway Build",
-          "completed": false,
-          "metricKeys": [
-            "pushups_day"
-          ]
-        },
-        {
-          "row": 4,
-          "time": "12:30 - 2:00 PM",
-          "task": "Workshop Tidy & Project Reset",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 5,
-          "time": "2:00 - 3:30 PM",
-          "task": "Property Projects: Install Shower Pad Trim & Check Plumbing",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 6,
-          "time": "3:30 - 5:00 PM",
-          "task": "Sud Studs: Trailer Shelf Installation & Plumb Fittings",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 7,
-          "time": "5:15 - 6:00 PM",
-          "task": "Dinner (5:15) & Feed Dogs (5:45)",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 8,
-          "time": "6:00 - 6:35 PM",
-          "task": "Walk Dogs",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 9,
-          "time": "6:35 - 7:20 PM",
-          "task": "Peloton 10m Ride + 10m Stretch & 7:05 PM Check-In",
-          "completed": false,
-          "metricKeys": [
-            "peloton_bike",
-            "peloton_stretch"
-          ]
-        },
-        {
-          "row": 10,
-          "time": "8:30 PM",
-          "task": "Wind Down & Sleep",
-          "completed": false,
-          "metricKeys": []
-        }
+        {"row": 1, "time": "7:00 - 7:10 AM", "task": "Feed Dogs", "completed": false, "metricKeys": []},
+        {"row": 2, "time": "7:10 - 7:30 AM", "task": "Morning Stretch (20m)", "completed": false, "metricKeys": []},
+        {"row": 3, "time": "7:30 - 7:42 AM", "task": "Pushups", "completed": false, "metricKeys": ["pushups"]},
+        {"row": 4, "time": "7:42 - 7:46 AM", "task": "Plank Hold", "completed": false, "metricKeys": ["plank"]},
+        {"row": 5, "time": "7:46 - 7:50 AM", "task": "Horse Stance Hold", "completed": false, "metricKeys": ["horse_stance"]},
+        {"row": 6, "time": "7:50 - 8:00 AM", "task": "Morning Coffee", "completed": false, "metricKeys": []},
+        {"row": 7, "time": "8:00 - 8:30 AM", "task": "YouTube Premiere: November YouTube Short #2 Drops", "completed": false, "metricKeys": []},
+        {"row": 8, "time": "8:30 AM - 12:30 PM", "task": "4-Hour Deep Work Window: Finish Shower Walkway Build", "completed": false, "metricKeys": []},
+        {"row": 9, "time": "12:30 - 2:00 PM", "task": "Workshop Tidy & Project Reset", "completed": false, "metricKeys": []},
+        {"row": 10, "time": "2:00 - 3:30 PM", "task": "Property Projects: Install Shower Pad Trim & Check Plumbing", "completed": false, "metricKeys": []},
+        {"row": 11, "time": "3:30 - 5:00 PM", "task": "Sud Studs: Trailer Shelf Installation & Plumb Fittings", "completed": false, "metricKeys": []},
+        {"row": 12, "time": "5:15 - 5:45 PM", "task": "Dinner", "completed": false, "metricKeys": []},
+        {"row": 13, "time": "5:45 - 6:00 PM", "task": "Feed Dogs", "completed": false, "metricKeys": []},
+        {"row": 14, "time": "6:00 - 6:35 PM", "task": "Walk Dogs", "completed": false, "metricKeys": []},
+        {"row": 15, "time": "6:35 - 6:45 PM", "task": "Peloton Bike Ride", "completed": false, "metricKeys": ["peloton_bike"]},
+        {"row": 16, "time": "6:45 - 6:55 PM", "task": "Peloton Post-Ride Stretch", "completed": false, "metricKeys": ["peloton_stretch"]},
+        {"row": 17, "time": "7:05 - 7:20 PM", "task": "Daily Evening Check-In", "completed": false, "metricKeys": []},
+        {"row": 18, "time": "8:30 PM", "task": "Wind Down & Sleep", "completed": false, "metricKeys": []}
       ],
       "metrics": {
-        "pushups_morning": 100,
-        "pushups_morning_sets": "33/33/34",
+        "pushup_sets_done": [false, false, false],
+        "pushup_extra_log": [],
+        "pushups_morning": 0,
         "pushups_day": 0,
         "plank_sec": 105,
         "horse_sec": 80,
@@ -722,89 +254,29 @@
       "dayType": "Off-Day & Plan",
       "focus": "Lean-to Groundwork + MWI & Recipe Book + 4:00 PM Weekly Schedule Generator",
       "blocks": [
-        {
-          "row": 1,
-          "time": "7:00 - 8:30 AM",
-          "task": "Off-Day Morning Routine (Dogs, Pushups, Plank, Horse Stance, Coffee)",
-          "completed": false,
-          "metricKeys": [
-            "pushups_morning",
-            "plank",
-            "horse_stance"
-          ]
-        },
-        {
-          "row": 2,
-          "time": "8:30 AM - 12:00 PM",
-          "task": "Property Projects: Lean-to Groundwork & Dirt Leveling",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 3,
-          "time": "12:00 - 1:30 PM",
-          "task": "Project Buffer & Rest",
-          "completed": false,
-          "metricKeys": [
-            "pushups_day"
-          ]
-        },
-        {
-          "row": 4,
-          "time": "1:30 - 3:30 PM",
-          "task": "Computer Tasks: Create MWI for Lean-to & Recipe Book",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 5,
-          "time": "3:30 - 4:00 PM",
-          "task": "Backlog Priority Review & Weekly Progress Audit",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 6,
-          "time": "4:00 - 5:00 PM",
-          "task": "Weekly Schedule Generator Runs for Next Week",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 7,
-          "time": "5:15 - 6:00 PM",
-          "task": "Dinner (5:15) & Feed Dogs (5:45)",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 8,
-          "time": "6:00 - 6:35 PM",
-          "task": "Walk Dogs",
-          "completed": false,
-          "metricKeys": []
-        },
-        {
-          "row": 9,
-          "time": "6:35 - 7:20 PM",
-          "task": "Peloton 10m Ride + 10m Stretch & 7:05 PM Check-In",
-          "completed": false,
-          "metricKeys": [
-            "peloton_bike",
-            "peloton_stretch"
-          ]
-        },
-        {
-          "row": 10,
-          "time": "8:30 PM",
-          "task": "Wind Down & Sleep",
-          "completed": false,
-          "metricKeys": []
-        }
+        {"row": 1, "time": "7:00 - 7:15 AM", "task": "Feed Dogs", "completed": false, "metricKeys": []},
+        {"row": 2, "time": "7:15 - 7:35 AM", "task": "Morning Stretch (20m)", "completed": false, "metricKeys": []},
+        {"row": 3, "time": "7:35 - 7:50 AM", "task": "Pushups", "completed": false, "metricKeys": ["pushups"]},
+        {"row": 4, "time": "7:50 - 7:55 AM", "task": "Plank Hold", "completed": false, "metricKeys": ["plank"]},
+        {"row": 5, "time": "7:55 - 8:00 AM", "task": "Horse Stance Hold", "completed": false, "metricKeys": ["horse_stance"]},
+        {"row": 6, "time": "8:00 - 8:30 AM", "task": "Morning Coffee & Light Reading", "completed": false, "metricKeys": []},
+        {"row": 7, "time": "8:30 AM - 12:00 PM", "task": "Property Projects: Lean-to Groundwork & Dirt Leveling", "completed": false, "metricKeys": []},
+        {"row": 8, "time": "12:00 - 1:30 PM", "task": "Project Buffer & Rest", "completed": false, "metricKeys": []},
+        {"row": 9, "time": "1:30 - 3:30 PM", "task": "Computer Tasks: Create MWI for Lean-to & Recipe Book", "completed": false, "metricKeys": []},
+        {"row": 10, "time": "3:30 - 4:00 PM", "task": "Backlog Priority Review & Weekly Progress Audit", "completed": false, "metricKeys": []},
+        {"row": 11, "time": "4:00 - 5:00 PM", "task": "Weekly Schedule Generator Runs for Next Week", "completed": false, "metricKeys": []},
+        {"row": 12, "time": "5:15 - 5:45 PM", "task": "Dinner", "completed": false, "metricKeys": []},
+        {"row": 13, "time": "5:45 - 6:00 PM", "task": "Feed Dogs", "completed": false, "metricKeys": []},
+        {"row": 14, "time": "6:00 - 6:35 PM", "task": "Walk Dogs", "completed": false, "metricKeys": []},
+        {"row": 15, "time": "6:35 - 6:45 PM", "task": "Peloton Bike Ride", "completed": false, "metricKeys": ["peloton_bike"]},
+        {"row": 16, "time": "6:45 - 6:55 PM", "task": "Peloton Post-Ride Stretch", "completed": false, "metricKeys": ["peloton_stretch"]},
+        {"row": 17, "time": "7:05 - 7:20 PM", "task": "Daily Evening Check-In", "completed": false, "metricKeys": []},
+        {"row": 18, "time": "8:30 PM", "task": "Wind Down & Sleep", "completed": false, "metricKeys": []}
       ],
       "metrics": {
-        "pushups_morning": 100,
-        "pushups_morning_sets": "33/33/34",
+        "pushup_sets_done": [false, false, false],
+        "pushup_extra_log": [],
+        "pushups_morning": 0,
         "pushups_day": 0,
         "plank_sec": 105,
         "horse_sec": 80,

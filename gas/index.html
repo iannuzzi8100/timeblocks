@@ -20,7 +20,7 @@
       --accent: #3b82f6;
       --accent-soft: rgba(59, 130, 246, 0.14);
       --green: #10b981;
-      --green-soft: rgba(16, 185, 129, 0.14);
+      --green-soft: rgba(16, 185, 129, 0.15);
       --amber: #f59e0b;
       --amber-soft: rgba(245, 158, 11, 0.14);
     }
@@ -113,7 +113,7 @@
       color: #60a5fa;
     }
 
-    /* 10-Row Bubble Checklist (Front & Center) */
+    /* Bubble Checklist (Front & Center) */
     .bubble-list {
       display: flex;
       flex-direction: column;
@@ -180,8 +180,16 @@
     .row-line {
       display: flex;
       align-items: baseline;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .row-line-left {
+      display: flex;
+      align-items: baseline;
       gap: 6px;
       flex-wrap: wrap;
+      min-width: 0;
     }
 
     .time-str {
@@ -197,7 +205,7 @@
 
     .task-str {
       font-size: 13.5px;
-      font-weight: 500;
+      font-weight: 600;
       color: var(--text);
       line-height: 1.28;
     }
@@ -207,7 +215,153 @@
       text-decoration: line-through;
     }
 
-    /* Inline Ultra-Compact Metric Controls (Always accessible with 1 thumb tap: - / value / + / Hold Timer) */
+    /* Top-right gear button inside Pushups row */
+    .gear-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      border: 1px solid #263147;
+      background: #151c28;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .gear-btn:active, .gear-btn.active {
+      border-color: var(--accent);
+      color: #60a5fa;
+      background: var(--accent-soft);
+    }
+
+    .gear-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* Dedicated Pushups 4-Button Strip: [33] [33] [34] [+] */
+    .pushup-section {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .pushup-sets-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1.15fr;
+      gap: 6px;
+    }
+
+    .pushup-set-btn {
+      height: 36px;
+      border-radius: 9px;
+      border: 1px solid #2b374d;
+      background: #172030;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.14s ease;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pushup-set-btn.done {
+      background: var(--green-soft);
+      border-color: var(--green);
+      color: #34d399;
+    }
+
+    .pushup-set-btn.extra-plus {
+      background: var(--accent-soft);
+      border-color: rgba(59, 130, 246, 0.45);
+      color: #60a5fa;
+    }
+
+    .pushup-set-btn.extra-plus.has-extra {
+      background: rgba(59, 130, 246, 0.24);
+      border-color: #60a5fa;
+      color: #93c5fd;
+    }
+
+    .pushup-summary-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 0 2px;
+    }
+
+    .pushup-total-badge {
+      font-weight: 700;
+      color: #34d399;
+    }
+
+    .extra-history-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .extra-pill {
+      background: #172030;
+      border: 1px solid #28344a;
+      color: #93c5fd;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Inline Gear Config Drawer for Adjusting the 3 Set Rep Targets */
+    .gear-config-drawer {
+      display: none;
+      background: #0b0e15;
+      border: 1px solid #253047;
+      border-radius: 10px;
+      padding: 9px;
+      gap: 8px;
+      flex-direction: column;
+    }
+
+    .gear-config-drawer.open {
+      display: flex;
+    }
+
+    .gear-inputs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .gear-set-input {
+      width: 100%;
+      background: #131926;
+      border: 1px solid #2b374d;
+      color: var(--text);
+      border-radius: 7px;
+      padding: 6px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* Inline Metric Controls for Plank, Horse Stance, Peloton, YouTube */
     .inline-metrics {
       display: flex;
       flex-direction: column;
@@ -228,7 +382,7 @@
       font-size: 11.5px;
       font-weight: 600;
       color: var(--text-muted);
-      min-width: 78px;
+      min-width: 82px;
     }
 
     .metric-title small {
@@ -238,7 +392,6 @@
       font-weight: 500;
     }
 
-    /* Slider + +/- Buttons + Timer Bar */
     .control-cluster {
       display: flex;
       align-items: center;
@@ -287,7 +440,7 @@
     }
 
     .timer-btn {
-      padding: 4px 8px;
+      padding: 4px 9px;
       border-radius: 7px;
       border: 1px solid rgba(245, 158, 11, 0.4);
       background: var(--amber-soft);
@@ -311,7 +464,130 @@
       50% { opacity: 0.78; }
     }
 
-    /* Full-App Secondary Section (Hidden in Widget-Only Mode, toggleable at bottom) */
+    /* Custom Mobile Numpad Modal for Fourth (+) Extra Pushup Set */
+    .numpad-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 14px;
+      z-index: 110;
+    }
+
+    .numpad-backdrop.open {
+      display: flex;
+    }
+
+    .numpad-card {
+      background: #111620;
+      border: 1px solid #263248;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 360px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .numpad-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .numpad-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .numpad-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .numpad-display {
+      background: #080b10;
+      border: 1px solid #232e42;
+      border-radius: 11px;
+      padding: 10px 14px;
+      font-size: 26px;
+      font-weight: 800;
+      text-align: right;
+      color: #60a5fa;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .numpad-display-hint {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+
+    .numpad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+
+    .num-key {
+      height: 46px;
+      border-radius: 11px;
+      border: 1px solid #243044;
+      background: #172030;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .num-key:active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .numpad-actions {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .numpad-submit {
+      height: 44px;
+      border-radius: 11px;
+      border: none;
+      background: var(--green);
+      color: #05130d;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .numpad-cancel {
+      height: 44px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      background: #182030;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Full-App Secondary Section */
     .full-app-drawer {
       margin-top: 14px;
       display: flex;
@@ -368,7 +644,6 @@
       align-items: center;
     }
 
-    /* Goal Projections in Full App Drawer */
     .goal-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -401,7 +676,6 @@
       font-weight: 600;
     }
 
-    /* Backlog items */
     .tier-filter {
       display: flex;
       gap: 5px;
@@ -506,7 +780,7 @@
       font-size: 12px;
       font-weight: 600;
       transition: transform 0.2s ease;
-      z-index: 120;
+      z-index: 130;
     }
 
     .toast.show {
@@ -521,8 +795,8 @@
   <!-- Minimal Header: Day Title, Completion Pill, Day Selector, and Small '+' Box Button at Top Right -->
   <header class="top-bar">
     <div class="title-group">
-      <div class="day-title" id="dayTitle">Wed 11/18</div>
-      <div class="progress-pill" id="progressPill">4/10</div>
+      <div class="day-title" id="dayTitle">Thu 11/19</div>
+      <div class="progress-pill" id="progressPill">0/18</div>
     </div>
     <div class="top-actions">
       <select id="daySelect" class="day-select" onchange="selectDay(this.value)"></select>
@@ -530,7 +804,7 @@
     </div>
   </header>
 
-  <!-- Primary 10-Row Bubble Schedule & Inline Metric Checklist (Front & Center) -->
+  <!-- Primary Bubble Schedule & Individual Exercise Checklist -->
   <main class="bubble-list" id="bubbleList"></main>
 
   <!-- Subtle Footer Toggles for Full-App Analytics / Backlog / Sync to Google Sheet DB -->
@@ -541,7 +815,6 @@
   </div>
 
   <section class="full-app-drawer">
-    <!-- 2027 Goal Projections Panel (Only shown when tapped in Full App) -->
     <div id="goalsPanel" class="panel-card">
       <div class="panel-header">
         <span>Long-Term Goal Projections (2026 -> End of 2027)</span>
@@ -549,15 +822,49 @@
       <div class="goal-grid" id="goalGrid"></div>
     </div>
 
-    <!-- 6-Tier Backlog Database Panel -->
     <div id="backlogPanel" class="panel-card">
       <div class="panel-header">
-        <span>6-Tier Backlog Database (Replaces Google Tasks)</span>
+        <span>6-Tier Backlog Database</span>
       </div>
       <div class="tier-filter" id="tierFilter"></div>
       <div id="backlogList"></div>
     </div>
   </section>
+
+  <!-- Custom Numpad Modal for Fourth (+) Extra Pushup Set Throughout the Day -->
+  <div id="numpadModal" class="numpad-backdrop" onclick="if(event.target===this)closeNumpad()">
+    <div class="numpad-card">
+      <div class="numpad-header">
+        <div>
+          <div class="numpad-title">Add Extra Pushups Set</div>
+          <div class="numpad-sub" id="numpadRunningSub">Throughout-day extra reps</div>
+        </div>
+        <button class="step-btn" onclick="closeNumpad()">✕</button>
+      </div>
+      <div class="numpad-display">
+        <span class="numpad-display-hint">+ REPS</span>
+        <span id="numpadValue">0</span>
+      </div>
+      <div class="numpad-grid">
+        <button class="num-key" onclick="pressNum('1')">1</button>
+        <button class="num-key" onclick="pressNum('2')">2</button>
+        <button class="num-key" onclick="pressNum('3')">3</button>
+        <button class="num-key" onclick="pressNum('4')">4</button>
+        <button class="num-key" onclick="pressNum('5')">5</button>
+        <button class="num-key" onclick="pressNum('6')">6</button>
+        <button class="num-key" onclick="pressNum('7')">7</button>
+        <button class="num-key" onclick="pressNum('8')">8</button>
+        <button class="num-key" onclick="pressNum('9')">9</button>
+        <button class="num-key" style="font-size:13px;color:#60a5fa;" onclick="setNumDirect('25')">+25</button>
+        <button class="num-key" onclick="pressNum('0')">0</button>
+        <button class="num-key" style="font-size:14px;color:#f87171;" onclick="pressBackspace()">⌫</button>
+      </div>
+      <div class="numpad-actions">
+        <button class="numpad-cancel" onclick="closeNumpad()">Cancel</button>
+        <button class="numpad-submit" onclick="submitExtraPushups()">Add Reps</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Top-Right '+' Quick Add Modal -->
   <div id="addModal" class="modal-backdrop" onclick="if(event.target===this)closeAddModal()">
@@ -583,9 +890,11 @@
 
   <script>
     let appState = null;
-    let currentDayKey = "2026-11-18";
+    let currentDayKey = "2026-11-19";
     let activeTier = "This week";
-    let activeTimers = {}; // key -> { startMs, intervalId, baseSec }
+    let activeTimers = {};
+    let isPushupGearOpen = false;
+    let numpadBuffer = "";
 
     function fmtSec(totalSec) {
       const s = Math.max(0, Math.round(totalSec));
@@ -601,8 +910,135 @@
       setTimeout(() => t.classList.remove("show"), 1800);
     }
 
+    function getPushupSetConfig() {
+      if (!appState.pushupSetConfig || appState.pushupSetConfig.length !== 3) {
+        appState.pushupSetConfig = [33, 33, 34];
+      }
+      return appState.pushupSetConfig;
+    }
+
+    function ensureDayPushupData(day) {
+      day.metrics = day.metrics || {};
+      if (!Array.isArray(day.metrics.pushup_sets_done) || day.metrics.pushup_sets_done.length !== 3) {
+        const was100 = Number(day.metrics.pushups_morning || 0) >= 100;
+        day.metrics.pushup_sets_done = [was100, was100, was100];
+      }
+      if (!Array.isArray(day.metrics.pushup_extra_log)) {
+        const existingDay = Number(day.metrics.pushups_day || 0);
+        day.metrics.pushup_extra_log = existingDay > 0 ? [existingDay] : [];
+      }
+      recalcPushupTotals(day);
+    }
+
+    function recalcPushupTotals(day) {
+      const cfg = getPushupSetConfig();
+      const doneArr = day.metrics.pushup_sets_done || [false, false, false];
+      let amTotal = 0;
+      for (let i = 0; i < 3; i++) {
+        if (doneArr[i]) amTotal += Number(cfg[i] || 0);
+      }
+      const extraLog = day.metrics.pushup_extra_log || [];
+      const extraTotal = extraLog.reduce((acc, v) => acc + Number(v || 0), 0);
+
+      day.metrics.pushups_morning = amTotal;
+      day.metrics.pushups_morning_sets = cfg.join("/");
+      day.metrics.pushups_day = extraTotal;
+
+      // Auto-complete or uncomplete the Pushups block row when all 3 morning sets are done
+      const pushBlock = (day.blocks || []).find(b => (b.metricKeys || []).includes("pushups") || (b.metricKeys || []).includes("pushups_morning"));
+      if (pushBlock && doneArr[0] && doneArr[1] && doneArr[2]) {
+        pushBlock.completed = true;
+      }
+    }
+
+    function togglePushupSet(setIdx) {
+      const day = appState.days[currentDayKey];
+      ensureDayPushupData(day);
+      day.metrics.pushup_sets_done[setIdx] = !day.metrics.pushup_sets_done[setIdx];
+      recalcPushupTotals(day);
+      renderAll();
+      saveState(true);
+    }
+
+    function togglePushupGear() {
+      isPushupGearOpen = !isPushupGearOpen;
+      renderAll();
+    }
+
+    function savePushupSetConfig() {
+      const s1 = Math.max(1, parseInt(document.getElementById("gearSet0").value, 10) || 33);
+      const s2 = Math.max(1, parseInt(document.getElementById("gearSet1").value, 10) || 33);
+      const s3 = Math.max(1, parseInt(document.getElementById("gearSet2").value, 10) || 34);
+      appState.pushupSetConfig = [s1, s2, s3];
+      isPushupGearOpen = false;
+      const day = appState.days[currentDayKey];
+      recalcPushupTotals(day);
+      renderAll();
+      saveState(false);
+      showToast(`Set targets updated: ${s1}/${s2}/${s3}`);
+    }
+
+    /* Numpad functions for 4th (+) Extra Pushups button */
+    function openNumpad() {
+      numpadBuffer = "";
+      document.getElementById("numpadValue").textContent = "0";
+      const day = appState.days[currentDayKey];
+      ensureDayPushupData(day);
+      const extraTotal = day.metrics.pushups_day || 0;
+      const amTotal = day.metrics.pushups_morning || 0;
+      document.getElementById("numpadRunningSub").textContent =
+        `Current today: ${amTotal} AM + ${extraTotal} Extra = ${amTotal + extraTotal} Total`;
+      document.getElementById("numpadModal").classList.add("open");
+    }
+
+    function closeNumpad() {
+      document.getElementById("numpadModal").classList.remove("open");
+    }
+
+    function pressNum(digit) {
+      if (numpadBuffer.length >= 3) return;
+      if (numpadBuffer === "0") numpadBuffer = digit;
+      else numpadBuffer += digit;
+      document.getElementById("numpadValue").textContent = numpadBuffer || "0";
+    }
+
+    function setNumDirect(valStr) {
+      numpadBuffer = valStr;
+      document.getElementById("numpadValue").textContent = numpadBuffer;
+    }
+
+    function pressBackspace() {
+      numpadBuffer = numpadBuffer.slice(0, -1);
+      document.getElementById("numpadValue").textContent = numpadBuffer || "0";
+    }
+
+    function submitExtraPushups() {
+      const reps = parseInt(numpadBuffer, 10) || 0;
+      if (reps <= 0) {
+        closeNumpad();
+        return;
+      }
+      const day = appState.days[currentDayKey];
+      ensureDayPushupData(day);
+      day.metrics.pushup_extra_log.push(reps);
+      recalcPushupTotals(day);
+      closeNumpad();
+      renderAll();
+      saveState(true);
+      showToast(`+${reps} pushups added (Total: ${day.metrics.pushups_morning + day.metrics.pushups_day})`);
+    }
+
+    function removeExtraSubmission(idx) {
+      const day = appState.days[currentDayKey];
+      ensureDayPushupData(day);
+      const removed = day.metrics.pushup_extra_log.splice(idx, 1);
+      recalcPushupTotals(day);
+      renderAll();
+      saveState(true);
+      showToast(`Removed +${removed[0]} extra set`);
+    }
+
     async function loadState() {
-      // 1. If running inside Google Apps Script Web App
       if (typeof google !== "undefined" && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function(data) {
           appState = data;
@@ -612,7 +1048,6 @@
         return;
       }
 
-      // 2. Local server or static fallback
       try {
         const res = await fetch("/api/state");
         appState = await res.json();
@@ -622,7 +1057,6 @@
       }
       currentDayKey = appState.activeDay || Object.keys(appState.days)[0];
 
-      // Check URL params for deep-link action from iOS Scriptable Widget
       const params = new URLSearchParams(window.location.search);
       if (params.get("toggleRow")) {
         const r = parseInt(params.get("toggleRow"), 10);
@@ -656,23 +1090,7 @@
     function stepMetric(key, delta) {
       const day = appState.days[currentDayKey];
       const m = day.metrics;
-      if (key === "pushups_morning") {
-        // Cycle 0 -> 33 -> 66 -> 100 -> 125...
-        const cur = Number(m.pushups_morning || 0);
-        if (delta > 0) {
-          if (cur < 33) m.pushups_morning = 33;
-          else if (cur < 66) m.pushups_morning = 66;
-          else if (cur < 100) m.pushups_morning = 100;
-          else m.pushups_morning = cur + 25;
-        } else {
-          if (cur === 100) m.pushups_morning = 66;
-          else if (cur === 66) m.pushups_morning = 33;
-          else if (cur <= 33) m.pushups_morning = 0;
-          else m.pushups_morning = Math.max(0, cur - 25);
-        }
-      } else if (key === "pushups_day") {
-        m.pushups_day = Math.max(0, Number(m.pushups_day || 0) + delta);
-      } else if (key === "plank") {
+      if (key === "plank") {
         m.plank_sec = Math.max(0, Number(m.plank_sec || 105) + delta);
       } else if (key === "horse_stance") {
         m.horse_sec = Math.max(0, Number(m.horse_sec || 80) + delta);
@@ -691,9 +1109,7 @@
       const day = appState.days[currentDayKey];
       const m = day.metrics;
       const v = Number(rawVal);
-      if (key === "pushups_morning") m.pushups_morning = v;
-      else if (key === "pushups_day") m.pushups_day = v;
-      else if (key === "plank") m.plank_sec = v;
+      if (key === "plank") m.plank_sec = v;
       else if (key === "horse_stance") m.horse_sec = v;
       else if (key === "peloton_bike") m.peloton_bike = v;
       else if (key === "peloton_stretch") m.peloton_stretch = v;
@@ -707,21 +1123,23 @@
       const m = day.metrics;
 
       if (activeTimers[key]) {
-        // Stop timer and auto-log
         clearInterval(activeTimers[key].intervalId);
         const elapsedSec = Math.max(1, Math.round((Date.now() - activeTimers[key].startMs) / 1000));
         delete activeTimers[key];
         if (key === "plank") {
           m.plank_sec = elapsedSec;
+          const b = day.blocks.find(x => (x.metricKeys || []).includes("plank"));
+          if (b) b.completed = true;
           showToast(`Plank logged: ${fmtSec(elapsedSec)}`);
         } else if (key === "horse_stance") {
           m.horse_sec = elapsedSec;
+          const b = day.blocks.find(x => (x.metricKeys || []).includes("horse_stance"));
+          if (b) b.completed = true;
           showToast(`Horse Stance logged: ${fmtSec(elapsedSec)}`);
         }
         renderAll();
         saveState(true);
       } else {
-        // Start timer
         const startMs = Date.now();
         const intervalId = setInterval(() => {
           const btn = document.getElementById(`timer-${key}`);
@@ -736,40 +1154,64 @@
       }
     }
 
-    function buildMetricRowHTML(key, m) {
-      if (key === "pushups_morning") {
-        const val = Number(m.pushups_morning ?? 100);
-        const sub = val === 100 ? "33/33/34" : "Target 100";
-        return `
-          <div class="metric-control" onclick="event.stopPropagation()">
-            <div class="metric-title">AM Pushups<small>${sub}</small></div>
-            <div class="control-cluster">
-              <button class="step-btn" onclick="stepMetric('pushups_morning', -33)">-</button>
-              <span class="val-pill">${val}</span>
-              <button class="step-btn" onclick="stepMetric('pushups_morning', 33)">+</button>
-              <input class="touch-slider" type="range" min="0" max="150" step="1" value="${val}" oninput="slideMetric('pushups_morning', this.value)" />
+    function buildPushupsUI(day) {
+      ensureDayPushupData(day);
+      const cfg = getPushupSetConfig();
+      const done = day.metrics.pushup_sets_done;
+      const extraLog = day.metrics.pushup_extra_log || [];
+      const extraTotal = day.metrics.pushups_day || 0;
+      const amTotal = day.metrics.pushups_morning || 0;
+      const grandTotal = amTotal + extraTotal;
+
+      const setBtnsHtml = [0, 1, 2].map(i => `
+        <button class="pushup-set-btn ${done[i] ? 'done' : ''}" onclick="event.stopPropagation(); togglePushupSet(${i})">
+          ${done[i] ? "✓ " : ""}${cfg[i]}
+        </button>
+      `).join("");
+
+      const plusBtnLabel = extraTotal > 0 ? `+ (${extraTotal})` : `+`;
+      const extraPillsHtml = extraLog.map((val, idx) =>
+        `<span class="extra-pill" title="Tap to remove" onclick="event.stopPropagation(); removeExtraSubmission(${idx})">+${val}</span>`
+      ).join("");
+
+      return `
+        <div class="pushup-section" onclick="event.stopPropagation()">
+          <div class="pushup-sets-row">
+            ${setBtnsHtml}
+            <button class="pushup-set-btn extra-plus ${extraTotal > 0 ? 'has-extra' : ''}" onclick="openNumpad()">
+              ${plusBtnLabel}
+            </button>
+          </div>
+          <div class="pushup-summary-line">
+            <div class="extra-history-pills">
+              <span>AM: ${amTotal}/${cfg[0]+cfg[1]+cfg[2]}</span>
+              ${extraPillsHtml}
             </div>
-          </div>`;
-      }
-      if (key === "pushups_day") {
-        const val = Number(m.pushups_day ?? 0);
-        return `
-          <div class="metric-control" onclick="event.stopPropagation()">
-            <div class="metric-title">Day Pushups<small>+25 sets</small></div>
-            <div class="control-cluster">
-              <button class="step-btn" onclick="stepMetric('pushups_day', -25)">-</button>
-              <span class="val-pill">${val}</span>
-              <button class="step-btn" onclick="stepMetric('pushups_day', 25)">+</button>
-              <input class="touch-slider" type="range" min="0" max="150" step="25" value="${val}" oninput="slideMetric('pushups_day', this.value)" />
+            <span class="pushup-total-badge">Total: ${grandTotal} reps</span>
+          </div>
+          <div class="gear-config-drawer ${isPushupGearOpen ? 'open' : ''}">
+            <div style="font-size:11px;font-weight:700;color:var(--text-muted);">Adjust Morning 3-Set Rep Targets:</div>
+            <div class="gear-inputs-grid">
+              <input id="gearSet0" class="gear-set-input" type="number" value="${cfg[0]}" />
+              <input id="gearSet1" class="gear-set-input" type="number" value="${cfg[1]}" />
+              <input id="gearSet2" class="gear-set-input" type="number" value="${cfg[2]}" />
+              <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 11px;" onclick="savePushupSetConfig()">Save</button>
             </div>
-          </div>`;
+          </div>
+        </div>
+      `;
+    }
+
+    function buildMetricRowHTML(key, m, day) {
+      if (key === "pushups" || key === "pushups_morning") {
+        return buildPushupsUI(day);
       }
       if (key === "plank") {
         const val = Number(m.plank_sec ?? 105);
         const isRun = Boolean(activeTimers["plank"]);
         return `
           <div class="metric-control" onclick="event.stopPropagation()">
-            <div class="metric-title">Plank<small>Base 1:45 · Goal 5:00</small></div>
+            <div class="metric-title">Target 1:45<small>2027 Goal 5:00</small></div>
             <div class="control-cluster">
               <button class="step-btn" onclick="stepMetric('plank', -5)">-</button>
               <span class="val-pill">${fmtSec(val)}</span>
@@ -786,7 +1228,7 @@
         const isRun = Boolean(activeTimers["horse_stance"]);
         return `
           <div class="metric-control" onclick="event.stopPropagation()">
-            <div class="metric-title">Horse Stance<small>Base 1:20 · Goal 4:00</small></div>
+            <div class="metric-title">Target 1:20<small>2027 Goal 4:00</small></div>
             <div class="control-cluster">
               <button class="step-btn" onclick="stepMetric('horse_stance', -5)">-</button>
               <span class="val-pill">${fmtSec(val)}</span>
@@ -802,7 +1244,7 @@
         const val = Number(m.peloton_bike ?? 10);
         return `
           <div class="metric-control" onclick="event.stopPropagation()">
-            <div class="metric-title">Peloton Ride<small>Min 10m</small></div>
+            <div class="metric-title">Duration<small>Min 10m Ride</small></div>
             <div class="control-cluster">
               <button class="step-btn" onclick="stepMetric('peloton_bike', -5)">-</button>
               <span class="val-pill">${val}m</span>
@@ -815,7 +1257,7 @@
         const val = Number(m.peloton_stretch ?? 10);
         return `
           <div class="metric-control" onclick="event.stopPropagation()">
-            <div class="metric-title">Stretch<small>Min 10m</small></div>
+            <div class="metric-title">Duration<small>Min 10m Stretch</small></div>
             <div class="control-cluster">
               <button class="step-btn" onclick="stepMetric('peloton_stretch', -5)">-</button>
               <span class="val-pill">${val}m</span>
@@ -843,12 +1285,12 @@
     function renderAll() {
       if (!appState || !appState.days[currentDayKey]) return;
       const day = appState.days[currentDayKey];
+      ensureDayPushupData(day);
 
       document.getElementById("dayTitle").textContent = day.label;
       const done = day.blocks.filter(b => b.completed).length;
       document.getElementById("progressPill").textContent = `${done}/${day.blocks.length}`;
 
-      // Day Selector dropdown
       const sel = document.getElementById("daySelect");
       sel.innerHTML = "";
       Object.entries(appState.days).forEach(([k, d]) => {
@@ -859,7 +1301,6 @@
         sel.appendChild(opt);
       });
 
-      // 10-Row Bubble List
       const list = document.getElementById("bubbleList");
       list.innerHTML = "";
 
@@ -867,12 +1308,25 @@
         const rowEl = document.createElement("div");
         rowEl.className = "bubble-row" + (b.completed ? " completed" : "");
 
-        const mKeys = (b.metricKeys || []).filter(k => k !== "peloton_ab");
+        const mKeys = (b.metricKeys || []).filter(k => k !== "peloton_ab" && k !== "pushups_day");
+        const isPushupRow = mKeys.includes("pushups") || mKeys.includes("pushups_morning");
+
         let metricsHTML = "";
-        if (mKeys.length > 0) {
-          const inner = mKeys.map(k => buildMetricRowHTML(k, day.metrics)).join("");
+        if (isPushupRow) {
+          metricsHTML = buildPushupsUI(day);
+        } else if (mKeys.length > 0) {
+          const inner = mKeys.map(k => buildMetricRowHTML(k, day.metrics, day)).join("");
           metricsHTML = `<div class="inline-metrics">${inner}</div>`;
         }
+
+        const gearIconHTML = isPushupRow ? `
+          <button class="gear-btn ${isPushupGearOpen ? 'active' : ''}" title="Adjust Set Numbers" onclick="event.stopPropagation(); togglePushupGear()">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+        ` : "";
 
         rowEl.innerHTML = `
           <div class="row-main" onclick="toggleBlock(${idx})">
@@ -881,8 +1335,11 @@
             </div>
             <div class="row-text">
               <div class="row-line">
-                <span class="time-str">${b.time}</span>
-                <span class="task-str">${b.task}</span>
+                <div class="row-line-left">
+                  <span class="time-str">${b.time}</span>
+                  <span class="task-str">${b.task}</span>
+                </div>
+                ${gearIconHTML}
               </div>
             </div>
           </div>
@@ -891,7 +1348,6 @@
         list.appendChild(rowEl);
       });
 
-      // Render Full-App Goal Projections
       const goalGrid = document.getElementById("goalGrid");
       if (goalGrid && appState.goals) {
         goalGrid.innerHTML = appState.goals.map(g => `
@@ -903,7 +1359,6 @@
         `).join("");
       }
 
-      // Render Backlog
       renderBacklog();
     }
 
