@@ -21,7 +21,7 @@
  *    and set "When Interacting" to "Open URL".
  */
 
-const SERVER_URL = "http://localhost:8765";
+const SERVER_URL = "https://script.google.com/macros/s/AKfycbz64ug5Ys6N4Kz8vEzsJfOyxhf6bKtqSD63CLuWjzDfTds_pBdH4RH6Pl8spCZx-LSxNg/exec";
 
 async function fetchDayData() {
   try {
