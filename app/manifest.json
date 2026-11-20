@@ -1,6 +1,6 @@
 {
-  "name": "Derek's Daily Timeblock & Habit Tracker",
-  "short_name": "Timeblocks",
+  "name": "On Track",
+  "short_name": "On Track",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0b0f17",

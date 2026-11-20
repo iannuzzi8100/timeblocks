@@ -1,6 +1,6 @@
 {
-  "name": "Timeblocks",
-  "short_name": "Timeblocks",
+  "name": "On Track",
+  "short_name": "On Track",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
