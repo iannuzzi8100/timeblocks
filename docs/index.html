@@ -215,6 +215,40 @@
       gap: 10px;
     }
 
+    .completed-summary-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .restore-btn {
+      height: 28px;
+      padding: 0 9px;
+      border-radius: 7px;
+      border: 1px solid #2b374d;
+      background: #172030;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .restore-btn:active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .hiding-badge {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--amber);
+      background: var(--amber-soft);
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-left: 4px;
+    }
+
     .completed-summary-title {
       font-size: 14.5px;
       font-weight: 700;
@@ -1367,6 +1401,42 @@
     let activeTimers = {};
     let openGearKey = null;
     let numpadBuffer = "";
+    let hidePendingTimers = {}; // workoutKey -> { timeoutId, expiresAt }
+    let hiddenWorkouts = {};    // `${dayKey}:${workoutKey}` -> true (auto-hidden 5s after completion)
+
+    function scheduleAutoHide(workoutKey) {
+      const fullKey = `${currentDayKey}:${workoutKey}`;
+      if (hidePendingTimers[fullKey]) {
+        clearTimeout(hidePendingTimers[fullKey].timeoutId);
+      }
+      hiddenWorkouts[fullKey] = false;
+      const expiresAt = Date.now() + 5000;
+      const timeoutId = setTimeout(() => {
+        delete hidePendingTimers[fullKey];
+        hiddenWorkouts[fullKey] = true;
+        renderAll();
+      }, 5000);
+      hidePendingTimers[fullKey] = { timeoutId, expiresAt };
+    }
+
+    function cancelAutoHide(workoutKey) {
+      const fullKey = `${currentDayKey}:${workoutKey}`;
+      if (hidePendingTimers[fullKey]) {
+        clearTimeout(hidePendingTimers[fullKey].timeoutId);
+        delete hidePendingTimers[fullKey];
+      }
+      delete hiddenWorkouts[fullKey];
+    }
+
+    function isWorkoutHidden(workoutKey, isDone) {
+      if (!isDone) return false;
+      const fullKey = `${currentDayKey}:${workoutKey}`;
+      // If a 5s timer is actively counting down, keep it visible until timer fires
+      if (hidePendingTimers[fullKey]) return false;
+      // If it was already completed when page loaded (or after 5s elapsed), hide it
+      if (hiddenWorkouts[fullKey] === false) return false;
+      return true;
+    }
 
     const GEAR_SVG = `
       <svg viewBox="0 0 24 24">
@@ -1548,8 +1618,11 @@
       ensureDayWorkoutData(day);
       const done = day.metrics.pushup_sets_done;
       const allDone = done.length > 0 && done.every(Boolean);
-      day.metrics.pushup_sets_done = done.map(() => !allDone);
+      const nextDone = !allDone;
+      day.metrics.pushup_sets_done = done.map(() => nextDone);
       recalcPushupTotals(day);
+      if (nextDone) scheduleAutoHide("pushups");
+      else cancelAutoHide("pushups");
       renderAll();
       saveState(true);
     }
@@ -1559,6 +1632,9 @@
       ensureDayWorkoutData(day);
       day.metrics.pushup_sets_done[setIdx] = !day.metrics.pushup_sets_done[setIdx];
       recalcPushupTotals(day);
+      const allDone = day.metrics.pushup_sets_done.length > 0 && day.metrics.pushup_sets_done.every(Boolean);
+      if (allDone) scheduleAutoHide("pushups");
+      else cancelAutoHide("pushups");
       renderAll();
       saveState(true);
     }
@@ -1567,6 +1643,9 @@
       const day = appState.days[currentDayKey];
       ensureDayWorkoutData(day);
       day.metrics[field] = !day.metrics[field];
+      const wKey = field.replace("_done", "");
+      if (day.metrics[field]) scheduleAutoHide(wKey);
+      else cancelAutoHide(wKey);
       renderAll();
       saveState(true);
     }
@@ -1576,6 +1655,9 @@
       ensureDayWorkoutData(day);
       day.metrics[metricKey] = mins;
       day.metrics[doneKey] = mins > 0;
+      const wKey = doneKey.replace("_done", "");
+      if (mins > 0) scheduleAutoHide(wKey);
+      else cancelAutoHide(wKey);
       renderAll();
       saveState(true);
     }
@@ -1704,6 +1786,9 @@
       recalcPushupTotals(day);
       closeNumpad();
       renderAll();
+      if (document.getElementById("completedWorkoutsPage").classList.contains("open")) {
+        openCompletedWorkoutsPage();
+      }
       saveState(true);
       showToast(`+${reps} pushups added (Total: ${day.metrics.pushups_morning + day.metrics.pushups_day})`);
     }
@@ -1817,10 +1902,12 @@
       if (key === "plank") {
         m.plank_sec = targetSec;
         m.plank_done = true;
+        scheduleAutoHide("plank");
         showToast(`Plank baseline logged: ${fmtSec(targetSec)}`);
       } else if (key === "horse_stance") {
         m.horse_sec = targetSec;
         m.horse_done = true;
+        scheduleAutoHide("horse");
         showToast(`Horse Stance baseline logged: ${fmtSec(targetSec)}`);
       }
       renderAll();
@@ -1848,11 +1935,13 @@
         if (key === "plank") {
           m.plank_sec = elapsedSec;
           m.plank_done = true;
+          scheduleAutoHide("plank");
           if (elapsedSec > hc.plankTargetSec) hc.plankTargetSec = elapsedSec;
           showToast(`Plank logged: ${fmtSec(elapsedSec)}${elapsedSec >= targetSec ? " (Target Met!)" : ""}`);
         } else if (key === "horse_stance") {
           m.horse_sec = elapsedSec;
           m.horse_done = true;
+          scheduleAutoHide("horse");
           if (elapsedSec > hc.horseTargetSec) hc.horseTargetSec = elapsedSec;
           showToast(`Horse Stance logged: ${fmtSec(elapsedSec)}${elapsedSec >= targetSec ? " (Target Met!)" : ""}`);
         }
@@ -1943,16 +2032,28 @@
       const wDoneCount = workoutChecks.filter(Boolean).length;
       document.getElementById("workoutProgressBadge").textContent = `${wDoneCount}/5 Completed`;
 
-      // Show "Completed (X) ->" button once 2 or more workouts are complete
+      // Show "Completed (X) ->" button as soon as 1 or more workouts are complete
       const cwBtn = document.getElementById("completedWorkoutsBtn");
       const cwCount = document.getElementById("completedWorkoutsBtnCount");
       if (cwBtn && cwCount) {
-        if (wDoneCount >= 2) {
+        if (wDoneCount >= 1) {
           cwBtn.style.display = "inline-flex";
           cwCount.textContent = wDoneCount;
         } else {
           cwBtn.style.display = "none";
         }
+      }
+
+      const hidePushups = isWorkoutHidden("pushups", pushupsAllDone);
+      const hidePlank = isWorkoutHidden("plank", Boolean(m.plank_done));
+      const hideHorse = isWorkoutHidden("horse", Boolean(m.horse_done));
+      const hideBike = isWorkoutHidden("peloton_bike", Boolean(m.peloton_bike_done));
+      const hideStretch = isWorkoutHidden("peloton_stretch", Boolean(m.peloton_stretch_done));
+
+      function hidingBadgeFor(wKey) {
+        return hidePendingTimers[`${currentDayKey}:${wKey}`]
+          ? `<span class="hiding-badge">Moving to Completed...</span>`
+          : "";
       }
 
       const setBtnsHtml = cfg.map((reps, i) => `
@@ -2022,7 +2123,7 @@
           </div>
         `;
 
-      const pushupsCardHTML = `
+      const pushupsCardHTML = hidePushups ? "" : `
         <div class="workout-card ${pushupsAllDone ? 'completed' : ''}">
           <div class="row-main" onclick="togglePushupAll()">
             <div class="bubble-circle">${CHECK_SVG}</div>
@@ -2032,6 +2133,7 @@
                   <span class="workout-title">Pushups</span>
                   <span class="workout-sub-pill">${grandTotal} reps</span>
                   ${compactPlusHTML}
+                  ${hidingBadgeFor("pushups")}
                 </div>
                 <button class="gear-btn ${openGearKey === 'pushups' ? 'active' : ''}" title="Adjust Set Numbers" onclick="event.stopPropagation(); toggleGear('pushups')">
                   ${GEAR_SVG}
@@ -2045,10 +2147,13 @@
 
       function buildHoldCard(key, title, doneField) {
         const isPlank = key === "plank";
+        const wKey = isPlank ? "plank" : "horse";
+        const isDone = Boolean(m[doneField]);
+        if ((isPlank && hidePlank) || (!isPlank && hideHorse)) return "";
+
         const curSec = Number(isPlank ? (m.plank_sec ?? 105) : (m.horse_sec ?? 80));
         const targetSec = Number(isPlank ? (hc.plankTargetSec ?? 105) : (hc.horseTargetSec ?? 80));
         const goalSec = Number(isPlank ? (hc.plankGoalSec ?? 300) : (hc.horseGoalSec ?? 240));
-        const isDone = Boolean(m[doneField]);
         const pct = Math.min(100, Math.round((curSec / targetSec) * 100));
         const isPr = curSec >= targetSec;
 
@@ -2097,6 +2202,7 @@
                   <div class="row-line-left">
                     <span class="workout-title">${title}</span>
                     <span class="workout-sub-pill">${fmtSec(curSec)} / ${fmtSec(targetSec)}</span>
+                    ${hidingBadgeFor(wKey)}
                   </div>
                   <button class="gear-btn ${openGearKey === key ? 'active' : ''}" title="Configure Target & Countdown" onclick="event.stopPropagation(); toggleGear('${key}')">
                     ${GEAR_SVG}
@@ -2114,8 +2220,7 @@
       const strMin = Number(m.peloton_stretch ?? 10);
       const strDone = Boolean(m.peloton_stretch_done);
 
-      const pelotonGridHTML = `
-        <div class="peloton-grid">
+      const bikeCardHTML = hideBike ? "" : `
           <div class="peloton-mini-card ${bikeDone ? 'completed' : ''}">
             <div class="peloton-top" onclick="toggleWorkoutDone('peloton_bike_done')">
               <div class="peloton-top-left">
@@ -2129,8 +2234,9 @@
                 <button class="peloton-dur-btn ${bikeDone && bikeMin === v ? 'selected' : ''}" onclick="setPelotonDuration('peloton_bike', 'peloton_bike_done', ${v})">${v}m</button>
               `).join("")}
             </div>
-          </div>
+          </div>`;
 
+      const stretchCardHTML = hideStretch ? "" : `
           <div class="peloton-mini-card ${strDone ? 'completed' : ''}">
             <div class="peloton-top" onclick="toggleWorkoutDone('peloton_stretch_done')">
               <div class="peloton-top-left">
@@ -2144,15 +2250,22 @@
                 <button class="peloton-dur-btn ${strDone && strMin === v ? 'selected' : ''}" onclick="setPelotonDuration('peloton_stretch', 'peloton_stretch_done', ${v})">${v}m</button>
               `).join("")}
             </div>
-          </div>
-        </div>
-      `;
+          </div>`;
 
-      document.getElementById("workoutsHub").innerHTML =
+      const pelotonGridHTML = (bikeCardHTML || stretchCardHTML)
+        ? `<div class="peloton-grid" style="${(!bikeCardHTML || !stretchCardHTML) ? 'grid-template-columns:1fr;' : ''}">${bikeCardHTML}${stretchCardHTML}</div>`
+        : "";
+
+      const combinedWorkoutsHTML =
         pushupsCardHTML +
         buildHoldCard("plank", "Plank Hold", "plank_done") +
         buildHoldCard("horse_stance", "Horse Stance Hold", "horse_done") +
         pelotonGridHTML;
+
+      document.getElementById("workoutsHub").innerHTML = combinedWorkoutsHTML || `
+        <div class="workout-card completed" style="text-align:center;font-size:12.5px;color:#34d399;cursor:pointer;" onclick="openCompletedWorkoutsPage()">
+          ✓ All daily workouts completed — tap to view or add extra pushups →
+        </div>`;
     }
 
     function renderAll() {
@@ -2289,13 +2402,16 @@
       if (pushupsAllDone) {
         const extraTxt = extraLog.length > 0 ? ` + Extra (${extraLog.map(v => "+" + v).join(", ")})` : "";
         items.push({
+          key: "pushups",
           title: "Pushups",
           sub: `Morning Baseline (${cfg.join("/")})${extraTxt}`,
-          val: `${amTotal + extraTotal} reps`
+          val: `${amTotal + extraTotal} reps`,
+          allowExtraPlus: true
         });
       }
       if (m.plank_done) {
         items.push({
+          key: "plank",
           title: "Plank Hold",
           sub: `Baseline Target: ${fmtSec(hc.plankTargetSec)} · 2027 Goal: ${fmtSec(hc.plankGoalSec)}`,
           val: fmtSec(m.plank_sec || hc.plankTargetSec)
@@ -2303,6 +2419,7 @@
       }
       if (m.horse_done) {
         items.push({
+          key: "horse",
           title: "Horse Stance Hold",
           sub: `Baseline Target: ${fmtSec(hc.horseTargetSec)} · 2027 Goal: ${fmtSec(hc.horseGoalSec)}`,
           val: fmtSec(m.horse_sec || hc.horseTargetSec)
@@ -2310,6 +2427,7 @@
       }
       if (m.peloton_bike_done) {
         items.push({
+          key: "peloton_bike",
           title: "Peloton Bike Ride",
           sub: "Daily Non-Negotiable Post-Walk Ride (Min 10m)",
           val: `${m.peloton_bike || 10} mins`
@@ -2317,6 +2435,7 @@
       }
       if (m.peloton_stretch_done) {
         items.push({
+          key: "peloton_stretch",
           title: "Peloton Post-Ride Stretch",
           sub: "Daily Mobility & Recovery (Min 10m)",
           val: `${m.peloton_stretch || 10} mins`
@@ -2332,16 +2451,43 @@
       } else {
         listEl.innerHTML = items.map(it => `
           <div class="completed-summary-card">
-            <div>
+            <div style="min-width:0;">
               <div class="completed-summary-title">✓ ${it.title}</div>
               <div class="completed-summary-sub">${it.sub}</div>
             </div>
-            <div class="completed-summary-val">${it.val}</div>
+            <div class="completed-summary-actions">
+              <div class="completed-summary-val">${it.val}</div>
+              ${it.allowExtraPlus ? `<button class="compact-plus-btn" style="height:28px;min-width:28px;" title="Add Extra Pushups" onclick="openNumpad()">+</button>` : ""}
+              <button class="restore-btn" onclick="restoreCompletedWorkout('${it.key}')">Edit</button>
+            </div>
           </div>
         `).join("");
       }
 
       document.getElementById("completedWorkoutsPage").classList.add("open");
+    }
+
+    function restoreCompletedWorkout(wKey) {
+      const day = appState.days[currentDayKey];
+      if (!day) return;
+      ensureDayWorkoutData(day);
+      cancelAutoHide(wKey);
+      if (wKey === "pushups") {
+        day.metrics.pushup_sets_done = day.metrics.pushup_sets_done.map(() => false);
+        recalcPushupTotals(day);
+      } else if (wKey === "plank") {
+        day.metrics.plank_done = false;
+      } else if (wKey === "horse") {
+        day.metrics.horse_done = false;
+      } else if (wKey === "peloton_bike") {
+        day.metrics.peloton_bike_done = false;
+      } else if (wKey === "peloton_stretch") {
+        day.metrics.peloton_stretch_done = false;
+      }
+      closeCompletedWorkoutsPage();
+      renderAll();
+      saveState(true);
+      showToast("Restored to Daily Workouts for editing");
     }
 
     function closeCompletedWorkoutsPage() {
