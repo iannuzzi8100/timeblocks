@@ -360,6 +360,28 @@
       font-variant-numeric: tabular-nums;
     }
 
+    .compact-plus-btn {
+      height: 22px;
+      min-width: 26px;
+      padding: 0 7px;
+      border-radius: 6px;
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      background: var(--accent-soft);
+      color: #60a5fa;
+      font-size: 13px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .compact-plus-btn:active {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
     /* Top-right gear button inside exercise rows */
     .gear-btn {
       width: 26px;
@@ -1769,22 +1791,36 @@
         `<span class="extra-pill" title="Tap to remove" onclick="event.stopPropagation(); removeExtraSubmission(${idx})">+${val}</span>`
       ).join("");
 
-      const pushupsCardHTML = `
-        <div class="workout-card ${pushupsAllDone ? 'completed' : ''}">
-          <div class="row-main" onclick="togglePushupAll()">
-            <div class="bubble-circle">${CHECK_SVG}</div>
-            <div class="row-text">
-              <div class="row-line">
-                <div class="row-line-left">
-                  <span class="workout-title">Pushups</span>
-                  <span class="workout-sub-pill">${grandTotal} reps</span>
-                </div>
-                <button class="gear-btn ${openGearKey === 'pushups' ? 'active' : ''}" title="Adjust Set Numbers" onclick="event.stopPropagation(); toggleGear('pushups')">
-                  ${GEAR_SVG}
-                </button>
-              </div>
-            </div>
+      const compactPlusHTML = pushupsAllDone
+        ? `<button class="compact-plus-btn" title="Add extra pushups" onclick="event.stopPropagation(); openNumpad()">+</button>`
+        : "";
+
+      const gearDrawerHTML = `
+        <div class="gear-config-drawer ${openGearKey === 'pushups' ? 'open' : ''}" style="margin-top:${pushupsAllDone ? '8px' : '0'};" onclick="event.stopPropagation()">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);">Adjust Morning 3-Set Rep Targets:</div>
+          <div class="gear-inputs-grid">
+            <input id="gearSet0" class="gear-set-input" type="number" value="${cfg[0]}" />
+            <input id="gearSet1" class="gear-set-input" type="number" value="${cfg[1]}" />
+            <input id="gearSet2" class="gear-set-input" type="number" value="${cfg[2]}" />
+            <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 11px;" onclick="savePushupSetConfig()">Save</button>
           </div>
+        </div>
+      `;
+
+      const pushupBodyHTML = pushupsAllDone
+        ? `
+          ${extraLog.length > 0 ? `
+            <div class="pushup-summary-line" style="margin-top:6px;" onclick="event.stopPropagation()">
+              <div class="extra-history-pills">
+                <span>Extra sets:</span>
+                ${extraPillsHtml}
+              </div>
+              <span class="pushup-total-badge">AM ${amTotal} + ${extraTotal}</span>
+            </div>
+          ` : ""}
+          ${gearDrawerHTML}
+        `
+        : `
           <div class="pushup-section" onclick="event.stopPropagation()">
             <div class="pushup-sets-row">
               ${setBtnsHtml}
@@ -1799,16 +1835,28 @@
               </div>
               <span class="pushup-total-badge">Total: ${grandTotal}</span>
             </div>
-            <div class="gear-config-drawer ${openGearKey === 'pushups' ? 'open' : ''}">
-              <div style="font-size:11px;font-weight:700;color:var(--text-muted);">Adjust Morning 3-Set Rep Targets:</div>
-              <div class="gear-inputs-grid">
-                <input id="gearSet0" class="gear-set-input" type="number" value="${cfg[0]}" />
-                <input id="gearSet1" class="gear-set-input" type="number" value="${cfg[1]}" />
-                <input id="gearSet2" class="gear-set-input" type="number" value="${cfg[2]}" />
-                <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 11px;" onclick="savePushupSetConfig()">Save</button>
+            ${gearDrawerHTML}
+          </div>
+        `;
+
+      const pushupsCardHTML = `
+        <div class="workout-card ${pushupsAllDone ? 'completed' : ''}">
+          <div class="row-main" onclick="togglePushupAll()">
+            <div class="bubble-circle">${CHECK_SVG}</div>
+            <div class="row-text">
+              <div class="row-line">
+                <div class="row-line-left">
+                  <span class="workout-title">Pushups</span>
+                  <span class="workout-sub-pill">${grandTotal} reps</span>
+                  ${compactPlusHTML}
+                </div>
+                <button class="gear-btn ${openGearKey === 'pushups' ? 'active' : ''}" title="Adjust Set Numbers" onclick="event.stopPropagation(); toggleGear('pushups')">
+                  ${GEAR_SVG}
+                </button>
               </div>
             </div>
           </div>
+          ${pushupBodyHTML}
         </div>
       `;
 
