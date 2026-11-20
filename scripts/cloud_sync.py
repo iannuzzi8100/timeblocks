@@ -35,7 +35,7 @@ def pull_cloud_state():
 
 def push_cloud_state(state_obj=None):
     if state_obj is None:
-        state_obj = json.loads(STATE_PATH.read_text(encoding="utf-8"))
+        state_obj = json.loads(STATE_PATH.read_text(encoding="utf-8-sig"))
     else:
         STATE_PATH.write_text(json.dumps(state_obj, indent=2), encoding="utf-8")
 
