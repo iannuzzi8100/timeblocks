@@ -1621,8 +1621,6 @@
       const nextDone = !allDone;
       day.metrics.pushup_sets_done = done.map(() => nextDone);
       recalcPushupTotals(day);
-      if (nextDone) scheduleAutoHide("pushups");
-      else cancelAutoHide("pushups");
       renderAll();
       saveState(true);
     }
@@ -1632,9 +1630,6 @@
       ensureDayWorkoutData(day);
       day.metrics.pushup_sets_done[setIdx] = !day.metrics.pushup_sets_done[setIdx];
       recalcPushupTotals(day);
-      const allDone = day.metrics.pushup_sets_done.length > 0 && day.metrics.pushup_sets_done.every(Boolean);
-      if (allDone) scheduleAutoHide("pushups");
-      else cancelAutoHide("pushups");
       renderAll();
       saveState(true);
     }
@@ -2044,7 +2039,9 @@
         }
       }
 
-      const hidePushups = isWorkoutHidden("pushups", pushupsAllDone);
+      // Pushups always stays visible (compact 1-line bar with '+' once baseline done);
+      // Plank, Horse Stance, Peloton Ride, and Peloton Stretch auto-hide 5s after completion.
+      const hidePushups = false;
       const hidePlank = isWorkoutHidden("plank", Boolean(m.plank_done));
       const hideHorse = isWorkoutHidden("horse", Boolean(m.horse_done));
       const hideBike = isWorkoutHidden("peloton_bike", Boolean(m.peloton_bike_done));
