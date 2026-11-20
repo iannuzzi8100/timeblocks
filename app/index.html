@@ -118,6 +118,68 @@
       color: #60a5fa;
     }
 
+    /* Compact "Up Next" Banner Pinned at the Very Top */
+    .up-next-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.16), rgba(16, 185, 129, 0.08));
+      border: 1px solid rgba(59, 130, 246, 0.42);
+      border-radius: 13px;
+      padding: 9px 11px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .up-next-card.all-done {
+      background: var(--green-soft);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .up-next-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .up-next-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    .up-next-tag {
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #93c5fd;
+      background: rgba(59, 130, 246, 0.25);
+      padding: 1px 6px;
+      border-radius: 5px;
+    }
+
+    .up-next-card.all-done .up-next-tag {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.2);
+    }
+
+    .up-next-time {
+      font-size: 11px;
+      font-weight: 700;
+      color: #60a5fa;
+    }
+
+    .up-next-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     /* Section Headers */
     .section-header {
       display: flex;
@@ -1282,6 +1344,9 @@
     </div>
   </header>
 
+  <!-- COMPACT "UP NEXT" BANNER: Instantly shows the next uncompleted block -->
+  <section id="upNextBanner"></section>
+
   <!-- TOP SECTION: Daily Workouts Hub (Grouped at the Top Outside of Timeblocks) -->
   <div class="section-header">
     <span class="section-label">Daily Workouts</span>
@@ -2311,6 +2376,42 @@
         </div>`;
     }
 
+    function renderUpNextBanner(day) {
+      const container = document.getElementById("upNextBanner");
+      if (!container || !day || !Array.isArray(day.blocks)) return;
+
+      const nextIdx = day.blocks.findIndex(b => !b.completed);
+      if (nextIdx === -1) {
+        container.innerHTML = `
+          <div class="up-next-card all-done">
+            <div class="bubble-circle" style="background:var(--green);border-color:var(--green);">${CHECK_SVG}</div>
+            <div class="up-next-content">
+              <div class="up-next-meta">
+                <span class="up-next-tag">On Track</span>
+              </div>
+              <div class="up-next-title" style="color:#34d399;">All scheduled blocks complete for ${day.label}!</div>
+            </div>
+          </div>`;
+        return;
+      }
+
+      const nextBlock = day.blocks[nextIdx];
+      const isToday = currentDayKey === getLocalTodayKey();
+      const tagText = isToday ? "Up Next" : `First Up (${day.label})`;
+
+      container.innerHTML = `
+        <div class="up-next-card" onclick="toggleBlock(${nextIdx})" title="Tap to mark complete and advance">
+          <div class="bubble-circle" style="border-color:#60a5fa;">${CHECK_SVG}</div>
+          <div class="up-next-content">
+            <div class="up-next-meta">
+              <span class="up-next-tag">${tagText}</span>
+              <span class="up-next-time">${nextBlock.time}</span>
+            </div>
+            <div class="up-next-title">${nextBlock.task}</div>
+          </div>
+        </div>`;
+    }
+
     function renderAll() {
       if (!appState || !appState.days[currentDayKey]) return;
       const day = appState.days[currentDayKey];
@@ -2330,6 +2431,9 @@
         if (k === currentDayKey) opt.selected = true;
         sel.appendChild(opt);
       });
+
+      // 0. Render Compact "Up Next" Banner at the very top
+      renderUpNextBanner(day);
 
       // 1. Render Top Workouts Hub
       renderWorkoutsHub(day);
