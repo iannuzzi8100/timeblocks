@@ -1319,6 +1319,7 @@
     <div id="backlogPanel" class="panel-card">
       <div class="panel-header">
         <span>6-Tier Backlog Database</span>
+        <button id="toggleCompletedBacklogBtn" class="sw-chip-btn" style="height:24px;font-size:10.5px;" onclick="toggleShowCompletedBacklog()">Show Completed</button>
       </div>
       <div class="tier-filter" id="tierFilter"></div>
       <div id="backlogList"></div>
@@ -1396,8 +1397,29 @@
 
   <script>
     let appState = null;
-    let currentDayKey = "2026-11-19";
+    let currentDayKey = "2026-11-20";
     let activeTier = "This week";
+    let showCompletedBacklog = false;
+    let userManuallyPickedDay = false;
+
+    function getLocalTodayKey() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function resolveInitialDayKey(state) {
+      const todayKey = getLocalTodayKey();
+      if (state && state.days && state.days[todayKey]) {
+        return todayKey;
+      }
+      if (state && state.activeDay && state.days && state.days[state.activeDay]) {
+        return state.activeDay;
+      }
+      return Object.keys((state && state.days) || {})[0] || todayKey;
+    }
     let activeTimers = {};
     let openGearKey = null;
     let numpadBuffer = "";
@@ -1806,7 +1828,7 @@
       if (IS_GAS_FRAME) {
         google.script.run.withSuccessHandler(function(data) {
           appState = data;
-          currentDayKey = appState.activeDay || Object.keys(appState.days)[0];
+          if (!userManuallyPickedDay) currentDayKey = resolveInitialDayKey(appState);
           renderAll();
           if (manualRefresh) showToast("Refreshed from Cloud");
         }).readLiveState();
@@ -1827,7 +1849,7 @@
         if (cached && !appState) {
           try {
             appState = JSON.parse(cached);
-            currentDayKey = appState.activeDay || Object.keys(appState.days)[0];
+            if (!userManuallyPickedDay) currentDayKey = resolveInitialDayKey(appState);
             renderAll();
           } catch (_) {}
         }
@@ -1846,7 +1868,7 @@
         }
       }
 
-      currentDayKey = appState.activeDay || Object.keys(appState.days)[0];
+      if (!userManuallyPickedDay) currentDayKey = resolveInitialDayKey(appState);
 
       const params = new URLSearchParams(window.location.search);
       if (params.get("toggleRow")) {
@@ -1866,15 +1888,39 @@
     }
 
     function selectDay(dayKey) {
+      userManuallyPickedDay = true;
       currentDayKey = dayKey;
       appState.activeDay = dayKey;
       renderAll();
       saveState(true);
     }
 
+    // Automatically refresh & roll over to today whenever the user returns to the app on a new day
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        const todayKey = getLocalTodayKey();
+        if (appState && appState.days && appState.days[todayKey] && currentDayKey !== todayKey && !userManuallyPickedDay) {
+          currentDayKey = todayKey;
+        }
+        loadState(false);
+      }
+    });
+
     function toggleBlock(idx) {
       const day = appState.days[currentDayKey];
-      day.blocks[idx].completed = !day.blocks[idx].completed;
+      const b = day.blocks[idx];
+      b.completed = !b.completed;
+
+      // Sync completion with matching backlog item if linked or title-matched
+      const matchingBacklog = (appState.backlog || []).find(
+        x => (b.backlogId && x.id === b.backlogId) ||
+             (x.title && b.task && b.task.toLowerCase().includes(x.title.toLowerCase().slice(0, 18)))
+      );
+      if (matchingBacklog) {
+        matchingBacklog.status = b.completed ? "Completed" : "Active";
+        matchingBacklog.completedDate = b.completed ? getLocalTodayKey() : "";
+      }
+
       renderAll();
       saveState(true);
     }
@@ -2343,29 +2389,104 @@
       renderBacklog();
     }
 
+    function toggleShowCompletedBacklog() {
+      showCompletedBacklog = !showCompletedBacklog;
+      const btn = document.getElementById("toggleCompletedBacklogBtn");
+      if (btn) {
+        btn.textContent = showCompletedBacklog ? "Hide Completed" : "Show Completed";
+        btn.style.color = showCompletedBacklog ? "#34d399" : "";
+      }
+      renderBacklog();
+    }
+
+    function scheduleBacklogToToday(id) {
+      const item = (appState.backlog || []).find(x => x.id === id);
+      if (!item) return;
+      const day = appState.days[currentDayKey];
+      let insertIdx = day.blocks.findIndex(b => /Dinner/i.test(b.task));
+      if (insertIdx < 0) insertIdx = Math.min(5, day.blocks.length);
+
+      day.blocks.splice(insertIdx, 0, {
+        row: insertIdx + 1,
+        time: "3:15 - 5:00 PM",
+        task: item.title,
+        completed: false,
+        recurring: false,
+        pushCount: Number(item.pushCount || 0),
+        backlogId: item.id,
+        metricKeys: []
+      });
+      day.blocks.forEach((b, i) => { b.row = i + 1; });
+      renderAll();
+      saveState(true);
+      showToast(`Added "${item.title.slice(0, 22)}..." to ${day.label}`);
+    }
+
+    function deleteBacklogItem(id) {
+      appState.backlog = (appState.backlog || []).filter(x => x.id !== id);
+      renderBacklog();
+      saveState(false);
+      showToast("Deleted from backlog");
+    }
+
+    function restoreBacklogItem(id) {
+      const item = (appState.backlog || []).find(x => x.id === id);
+      if (item) {
+        item.status = "Active";
+        item.completedDate = "";
+        renderBacklog();
+        saveState(false);
+        showToast("Restored to active backlog");
+      }
+    }
+
     function renderBacklog() {
-      const items = (appState.backlog || []).filter(x => x.status !== "Completed");
-      document.getElementById("backlogCount").textContent = items.length;
+      const allItems = appState.backlog || [];
+      const activeItems = allItems.filter(x => x.status !== "Completed");
+      const completedItems = allItems.filter(x => x.status === "Completed");
+      document.getElementById("backlogCount").textContent = activeItems.length;
+
       const tiers = ["This week", "This month", "YouTube", "Bigger projects", "Computer Tasks", "General To Do"];
       const tf = document.getElementById("tierFilter");
       tf.innerHTML = tiers.map(t => `
         <span class="tier-chip ${t === activeTier ? 'active' : ''}" onclick="activeTier='${t}';renderBacklog()">${t}</span>
       `).join("");
 
-      const filtered = items.filter(x => x.tier === activeTier);
+      const pool = showCompletedBacklog ? completedItems : activeItems;
+      const filtered = pool.filter(x => x.tier === activeTier);
       const bl = document.getElementById("backlogList");
+
+      if (filtered.length === 0) {
+        bl.innerHTML = `<div style="font-size:12px;color:var(--text-dim);padding:10px 4px;text-align:center;">No ${showCompletedBacklog ? 'completed' : 'active'} tasks in ${activeTier}.</div>`;
+        return;
+      }
+
       bl.innerHTML = filtered.map(x => {
         const pCount = Number(x.pushCount || 0);
         const hLvl = getHeatLevel(pCount);
-        const rowHeat = hLvl > 0 ? ` push-heat-${hLvl}` : "";
+        const rowHeat = (!showCompletedBacklog && hLvl > 0) ? ` push-heat-${hLvl}` : "";
         const btnHeat = hLvl > 0 ? ` heat-${hLvl}` : "";
         const pushLabel = pCount > 0 ? `Not Today (${pCount}x)` : `Not Today`;
+
+        if (showCompletedBacklog) {
+          return `
+            <div class="backlog-item" style="opacity:0.78;">
+              <span style="flex:1;min-width:0;text-decoration:line-through;color:var(--text-muted);">✓ ${x.title}</span>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <button class="sw-chip-btn" style="height:21px;font-size:10px;padding:0 7px;" onclick="restoreBacklogItem('${x.id}')">Restore</button>
+                <button class="sw-chip-btn" style="height:21px;font-size:10px;padding:0 6px;color:#f87171;" onclick="deleteBacklogItem('${x.id}')">✕</button>
+              </div>
+            </div>
+          `;
+        }
+
         return `
           <div class="backlog-item${rowHeat}">
             <span style="flex:1;min-width:0;">${x.starred ? "[*] " : ""}${x.title} <small style="color:var(--text-dim)">(${x.env})</small></span>
-            <div style="display:flex;align-items:center;gap:5px;">
+            <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+              <button class="sw-chip-btn" style="height:21px;font-size:10px;padding:0 6px;color:#60a5fa;" title="Add to Today's Schedule" onclick="scheduleBacklogToToday('${x.id}')">+Today</button>
               <button class="not-today-btn${btnHeat}" onclick="pushBacklogItemNotToday('${x.id}')">${pushLabel}</button>
-              <button class="step-btn" style="width:auto;height:21px;padding:0 8px;font-size:10.5px;" onclick="completeBacklogItem('${x.id}')">Done</button>
+              <button class="step-btn" style="width:auto;height:21px;padding:0 7px;font-size:10px;" onclick="completeBacklogItem('${x.id}')">Done</button>
             </div>
           </div>
         `;
@@ -2376,8 +2497,10 @@
       const item = (appState.backlog || []).find(x => x.id === id);
       if (item) {
         item.status = "Completed";
+        item.completedDate = getLocalTodayKey();
         renderBacklog();
         saveState(false);
+        showToast("Marked complete in Backlog DB");
       }
     }
 
