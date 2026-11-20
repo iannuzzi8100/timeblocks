@@ -1490,6 +1490,38 @@
     let numpadBuffer = "";
     let hidePendingTimers = {}; // workoutKey -> { timeoutId, expiresAt }
     let hiddenWorkouts = {};    // `${dayKey}:${workoutKey}` -> true (auto-hidden 5s after completion)
+    let upNextPendingAdvance = null; // { dayKey, blockIdx, timeoutId }
+
+    function clearUpNextPending() {
+      if (upNextPendingAdvance && upNextPendingAdvance.timeoutId) {
+        clearTimeout(upNextPendingAdvance.timeoutId);
+      }
+      upNextPendingAdvance = null;
+    }
+
+    function tapUpNextBanner(blockIdx) {
+      const day = appState.days[currentDayKey];
+      if (!day || !day.blocks[blockIdx]) return;
+
+      // If user taps again during the 5-second buffer, undo the accidental completion
+      if (upNextPendingAdvance && upNextPendingAdvance.dayKey === currentDayKey && upNextPendingAdvance.blockIdx === blockIdx) {
+        clearUpNextPending();
+        toggleBlock(blockIdx);
+        showToast("Undone — still Up Next");
+        return;
+      }
+
+      clearUpNextPending();
+      toggleBlock(blockIdx);
+
+      // Hold the newly completed block on the Up Next banner for 5 seconds before advancing
+      const timeoutId = setTimeout(() => {
+        upNextPendingAdvance = null;
+        renderAll();
+      }, 5000);
+      upNextPendingAdvance = { dayKey: currentDayKey, blockIdx, timeoutId };
+      renderUpNextBanner(day);
+    }
 
     function scheduleAutoHide(workoutKey) {
       const fullKey = `${currentDayKey}:${workoutKey}`;
@@ -2380,6 +2412,26 @@
       const container = document.getElementById("upNextBanner");
       if (!container || !day || !Array.isArray(day.blocks)) return;
 
+      // If a block was just tapped from Up Next, keep showing it for the 5-second undo buffer
+      if (upNextPendingAdvance && upNextPendingAdvance.dayKey === currentDayKey) {
+        const bIdx = upNextPendingAdvance.blockIdx;
+        const heldBlock = day.blocks[bIdx];
+        if (heldBlock && heldBlock.completed) {
+          container.innerHTML = `
+            <div class="up-next-card all-done" onclick="tapUpNextBanner(${bIdx})" title="Tap within 5s to undo">
+              <div class="bubble-circle" style="background:var(--green);border-color:var(--green);">${CHECK_SVG}</div>
+              <div class="up-next-content">
+                <div class="up-next-meta">
+                  <span class="up-next-tag">✓ Done · Advancing...</span>
+                  <span class="hiding-badge">Tap to Undo (5s)</span>
+                </div>
+                <div class="up-next-title" style="color:var(--text-muted);text-decoration:line-through;">${heldBlock.task}</div>
+              </div>
+            </div>`;
+          return;
+        }
+      }
+
       const nextIdx = day.blocks.findIndex(b => !b.completed);
       if (nextIdx === -1) {
         container.innerHTML = `
@@ -2400,7 +2452,7 @@
       const tagText = isToday ? "Up Next" : `First Up (${day.label})`;
 
       container.innerHTML = `
-        <div class="up-next-card" onclick="toggleBlock(${nextIdx})" title="Tap to mark complete and advance">
+        <div class="up-next-card" onclick="tapUpNextBanner(${nextIdx})" title="Tap to mark complete (5s undo buffer)">
           <div class="bubble-circle" style="border-color:#60a5fa;">${CHECK_SVG}</div>
           <div class="up-next-content">
             <div class="up-next-meta">
