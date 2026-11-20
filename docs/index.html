@@ -1,0 +1,2171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Timeblocks" />
+  <meta name="theme-color" content="#080b10" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="manifest" href="manifest.json" />
+  <title>Timeblocks</title>
+  <style>
+    :root {
+      --bg: #080b10;
+      --card: #111620;
+      --card-done: #0c0f16;
+      --border: #1e2738;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #526077;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59, 130, 246, 0.14);
+      --green: #10b981;
+      --green-soft: rgba(16, 185, 129, 0.15);
+      --amber: #f59e0b;
+      --amber-soft: rgba(245, 158, 11, 0.14);
+      --red: #ef4444;
+      --red-soft: rgba(239, 68, 68, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: env(safe-area-inset-top, 10px) 12px calc(env(safe-area-inset-bottom, 16px) + 20px) 12px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* Ultra-Compact Top Bar: Day Title + Progress + Small '+' Box at Top Right */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 2px 10px 2px;
+      gap: 8px;
+    }
+
+    .title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .day-title {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .progress-pill {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      background: var(--green-soft);
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .day-select {
+      background: var(--card);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .icon-box-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .icon-box-btn.add-btn {
+      background: var(--accent-soft);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+    }
+
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 4px 6px 4px;
+      margin-top: 4px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .section-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #60a5fa;
+    }
+
+    /* Workouts Hub (Top Section Outside Timeblocks) */
+    .workouts-hub {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .workout-card {
+      background: var(--card);
+      border: 1px solid #222e42;
+      border-radius: 13px;
+      padding: 9px 11px;
+      transition: all 0.15s ease;
+    }
+
+    .workout-card.completed {
+      background: var(--card-done);
+      border-color: #16222f;
+    }
+
+    /* Bubble Checklist (Timeblocked Schedule Below Workouts) */
+    .bubble-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .bubble-row {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 9px 11px;
+      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .bubble-row.completed {
+      background: var(--card-done);
+      border-color: #151b26;
+    }
+
+    /* Progressive Red Urgency Heat for Pushed Tasks (1x -> 4x+) */
+    .bubble-row.push-heat-1:not(.completed) {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.09), #111620 75%);
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    .bubble-row.push-heat-2:not(.completed) {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.18), #141218 85%);
+      border-color: rgba(239, 68, 68, 0.55);
+    }
+
+    .bubble-row.push-heat-3:not(.completed) {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.28), #1a1116 90%);
+      border-color: rgba(239, 68, 68, 0.78);
+      box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.15);
+    }
+
+    .bubble-row.push-heat-4:not(.completed) {
+      background: linear-gradient(90deg, rgba(220, 38, 38, 0.42), #231015 95%);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.28), inset 0 0 12px rgba(239, 68, 68, 0.22);
+    }
+
+    .row-main {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Bubble Circle */
+    .bubble-circle {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #475569;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .bubble-row.completed .bubble-circle,
+    .workout-card.completed .bubble-circle {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .bubble-circle svg {
+      width: 14px;
+      height: 14px;
+      stroke: #06110b;
+      stroke-width: 3.2;
+      fill: none;
+      opacity: 0;
+    }
+
+    .bubble-row.completed .bubble-circle svg,
+    .workout-card.completed .bubble-circle svg {
+      opacity: 1;
+    }
+
+    .row-text {
+      flex: 1;
+      min-width: 0;
+      cursor: pointer;
+    }
+
+    .row-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .row-line-left {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .time-str {
+      font-size: 12px;
+      font-weight: 700;
+      color: #60a5fa;
+      white-space: nowrap;
+    }
+
+    .bubble-row.completed .time-str {
+      color: var(--text-dim);
+    }
+
+    .task-str {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.28;
+    }
+
+    .bubble-row.completed .task-str {
+      color: var(--text-dim);
+      text-decoration: line-through;
+    }
+
+    /* Inline "Not Today" Push Button — Ultra-Compact, Zero Extra Row Height */
+    .not-today-btn {
+      flex-shrink: 0;
+      height: 21px;
+      padding: 0 7px;
+      border-radius: 6px;
+      border: 1px solid #283347;
+      background: #151c28;
+      color: #94a3b8;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.14s ease;
+    }
+
+    .not-today-btn:hover {
+      border-color: #f87171;
+      color: #fca5a5;
+    }
+
+    .not-today-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Button gets progressively redder with each push */
+    .not-today-btn.heat-1 {
+      background: rgba(239, 68, 68, 0.16);
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+    }
+
+    .not-today-btn.heat-2 {
+      background: rgba(239, 68, 68, 0.28);
+      border-color: rgba(239, 68, 68, 0.7);
+      color: #fecaca;
+    }
+
+    .not-today-btn.heat-3 {
+      background: rgba(220, 38, 38, 0.48);
+      border-color: #ef4444;
+      color: #ffffff;
+    }
+
+    .not-today-btn.heat-4 {
+      background: #dc2626;
+      border-color: #f87171;
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+    }
+
+    .workout-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .workout-sub-pill {
+      font-size: 11px;
+      font-weight: 700;
+      color: #34d399;
+      background: var(--green-soft);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Top-right gear button inside exercise rows */
+    .gear-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      border: 1px solid #263147;
+      background: #151c28;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .gear-btn:active, .gear-btn.active {
+      border-color: var(--accent);
+      color: #60a5fa;
+      background: var(--accent-soft);
+    }
+
+    .gear-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* Dedicated Pushups 4-Button Strip: [33] [33] [34] [+] */
+    .pushup-section {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .pushup-sets-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1.15fr;
+      gap: 6px;
+    }
+
+    .pushup-set-btn {
+      height: 36px;
+      border-radius: 9px;
+      border: 1px solid #2b374d;
+      background: #172030;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.14s ease;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pushup-set-btn.done {
+      background: var(--green-soft);
+      border-color: var(--green);
+      color: #34d399;
+    }
+
+    .pushup-set-btn.extra-plus {
+      background: var(--accent-soft);
+      border-color: rgba(59, 130, 246, 0.45);
+      color: #60a5fa;
+    }
+
+    .pushup-set-btn.extra-plus.has-extra {
+      background: rgba(59, 130, 246, 0.24);
+      border-color: #60a5fa;
+      color: #93c5fd;
+    }
+
+    .pushup-summary-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 0 2px;
+    }
+
+    .pushup-total-badge {
+      font-weight: 700;
+      color: #34d399;
+    }
+
+    .extra-history-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .extra-pill {
+      background: #172030;
+      border: 1px solid #28344a;
+      color: #93c5fd;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Dedicated Plank & Horse Stance Stopwatch Strip */
+    .stopwatch-section {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .stopwatch-hero {
+      position: relative;
+      height: 52px;
+      border-radius: 11px;
+      border: 1px solid #28354c;
+      background: #0d121b;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 13px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, transform 0.08s ease;
+    }
+
+    .stopwatch-hero:active {
+      transform: scale(0.992);
+    }
+
+    .stopwatch-hero.countdown {
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, 0.12);
+    }
+
+    .stopwatch-hero.running {
+      border-color: var(--accent);
+    }
+
+    .stopwatch-hero.running.pr-zone {
+      border-color: var(--green);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+    }
+
+    .stopwatch-fill {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(59, 130, 246, 0.22), rgba(59, 130, 246, 0.35));
+      transition: width 0.1s linear;
+      pointer-events: none;
+    }
+
+    .stopwatch-fill.pr-fill {
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.22), rgba(16, 185, 129, 0.42));
+    }
+
+    .stopwatch-left {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .stopwatch-clock {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .stopwatch-hero.countdown .stopwatch-clock {
+      color: #fbbf24;
+    }
+
+    .stopwatch-hero.pr-zone .stopwatch-clock {
+      color: #34d399;
+    }
+
+    .stopwatch-sub {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .stopwatch-action-pill {
+      position: relative;
+      z-index: 2;
+      padding: 7px 13px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 800;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .stopwatch-hero.countdown .stopwatch-action-pill {
+      background: var(--amber);
+      color: #0b0e14;
+    }
+
+    .stopwatch-hero.running .stopwatch-action-pill {
+      background: var(--red);
+      color: #ffffff;
+      animation: pulse 1.1s infinite;
+    }
+
+    .stopwatch-hero.running.pr-zone .stopwatch-action-pill {
+      background: var(--green);
+      color: #05140d;
+      animation: none;
+    }
+
+    .stopwatch-controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .sw-quick-btns {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sw-chip-btn {
+      height: 27px;
+      padding: 0 9px;
+      border-radius: 7px;
+      border: 1px solid #2b374d;
+      background: #172030;
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sw-chip-btn:active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .sw-chip-btn.baseline-btn {
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.35);
+      background: var(--green-soft);
+    }
+
+    .sw-goal-text {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-align: right;
+    }
+
+    /* Compact Peloton Grid inside Top Workouts Hub */
+    .peloton-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .peloton-mini-card {
+      background: var(--card);
+      border: 1px solid #222e42;
+      border-radius: 12px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .peloton-mini-card.completed {
+      background: var(--card-done);
+      border-color: #16222f;
+    }
+
+    .peloton-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .peloton-top-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .peloton-mini-card.completed .bubble-circle {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .peloton-mini-card.completed .bubble-circle svg {
+      opacity: 1;
+    }
+
+    .peloton-btns-row {
+      display: flex;
+      gap: 4px;
+    }
+
+    .peloton-dur-btn {
+      flex: 1;
+      height: 27px;
+      border-radius: 7px;
+      border: 1px solid #2b374d;
+      background: #172030;
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .peloton-dur-btn.selected {
+      background: var(--green-soft);
+      border-color: var(--green);
+      color: #34d399;
+    }
+
+    /* Inline Gear Config Drawer */
+    .gear-config-drawer {
+      display: none;
+      background: #0b0e15;
+      border: 1px solid #253047;
+      border-radius: 10px;
+      padding: 9px;
+      gap: 8px;
+      flex-direction: column;
+    }
+
+    .gear-config-drawer.open {
+      display: flex;
+    }
+
+    .gear-inputs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .gear-hold-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .gear-set-input {
+      width: 100%;
+      background: #131926;
+      border: 1px solid #2b374d;
+      color: var(--text);
+      border-radius: 7px;
+      padding: 6px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .step-btn {
+      width: 28px;
+      height: 26px;
+      border-radius: 7px;
+      border: 1px solid #2b374d;
+      background: #172030;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.78; }
+    }
+
+    /* Custom Mobile Numpad Modal for Fourth (+) Extra Pushup Set */
+    .numpad-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 14px;
+      z-index: 110;
+    }
+
+    .numpad-backdrop.open {
+      display: flex;
+    }
+
+    .numpad-card {
+      background: #111620;
+      border: 1px solid #263248;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 360px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .numpad-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .numpad-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .numpad-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .numpad-display {
+      background: #080b10;
+      border: 1px solid #232e42;
+      border-radius: 11px;
+      padding: 10px 14px;
+      font-size: 26px;
+      font-weight: 800;
+      text-align: right;
+      color: #60a5fa;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .numpad-display-hint {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+
+    .numpad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+
+    .num-key {
+      height: 46px;
+      border-radius: 11px;
+      border: 1px solid #243044;
+      background: #172030;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .num-key:active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .numpad-actions {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .numpad-submit {
+      height: 44px;
+      border-radius: 11px;
+      border: none;
+      background: var(--green);
+      color: #05130d;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .numpad-cancel {
+      height: 44px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      background: #182030;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Full-App Secondary Section */
+    .full-app-drawer {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .drawer-toggle-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .ghost-btn {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .ghost-btn.primary-sync {
+      background: var(--green-soft);
+      border-color: rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+
+    .panel-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 12px;
+      display: none;
+    }
+
+    .panel-card.open {
+      display: block;
+    }
+
+    .panel-header {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .goal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .goal-box {
+      background: #0b0e15;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px;
+    }
+
+    .goal-box-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .goal-box-nums {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 3px 0;
+    }
+
+    .goal-box-pace {
+      font-size: 10px;
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .tier-filter {
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+      scrollbar-width: none;
+    }
+
+    .tier-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 7px;
+      background: #0b0e15;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .tier-chip.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .backlog-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
+      font-size: 12.5px;
+      gap: 8px;
+      margin-bottom: 3px;
+    }
+
+    .backlog-item.push-heat-1 {
+      background: rgba(239, 68, 68, 0.10);
+      border: 1px solid rgba(239, 68, 68, 0.30);
+    }
+
+    .backlog-item.push-heat-2 {
+      background: rgba(239, 68, 68, 0.20);
+      border: 1px solid rgba(239, 68, 68, 0.50);
+    }
+
+    .backlog-item.push-heat-3 {
+      background: rgba(239, 68, 68, 0.32);
+      border: 1px solid rgba(239, 68, 68, 0.75);
+    }
+
+    .backlog-item.push-heat-4 {
+      background: rgba(220, 38, 38, 0.45);
+      border: 1px solid #ef4444;
+    }
+
+    /* Small Top-Right '+' Quick Add Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 60px 14px 14px 14px;
+      z-index: 90;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      width: 100%;
+      max-width: 420px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      background: #080b10;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 11px;
+      border-radius: 9px;
+      font-size: 13.5px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .btn-sm {
+      padding: 8px 14px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-70px);
+      background: #1e293b;
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: transform 0.2s ease;
+      z-index: 130;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toast" class="toast">Saved</div>
+
+  <!-- Minimal Header: Day Title, Completion Pill, Day Selector, and Small '+' Box Button at Top Right -->
+  <header class="top-bar">
+    <div class="title-group">
+      <div class="day-title" id="dayTitle">Thu 11/19</div>
+      <div class="progress-pill" id="progressPill">4/10</div>
+    </div>
+    <div class="top-actions">
+      <select id="daySelect" class="day-select" onchange="selectDay(this.value)"></select>
+      <button class="icon-box-btn" onclick="loadState(true)" title="Refresh Cloud State" style="font-size:15px;color:var(--text-muted);">↻</button>
+      <button class="icon-box-btn add-btn" onclick="openAddModal()" title="Quick Add Task or Goal">+</button>
+    </div>
+  </header>
+
+  <!-- TOP SECTION: Daily Workouts Hub (Grouped at the Top Outside of Timeblocks) -->
+  <div class="section-header">
+    <span class="section-label">Daily Workouts</span>
+    <span class="section-badge" id="workoutProgressBadge">0/5 Completed</span>
+  </div>
+  <section class="workouts-hub" id="workoutsHub"></section>
+
+  <!-- BOTTOM SECTION: Clean Chronological Timeblock Schedule -->
+  <div class="section-header">
+    <span class="section-label">Timeblock Schedule</span>
+    <span class="section-badge" id="scheduleProgressBadge">4/10 Blocks</span>
+  </div>
+  <main class="bubble-list" id="bubbleList"></main>
+
+  <!-- Subtle Footer Toggles for Full-App Analytics / Backlog / Sync to Google Sheet DB -->
+  <div class="drawer-toggle-bar">
+    <button class="ghost-btn" onclick="togglePanel('goalsPanel')">2027 Projections</button>
+    <button class="ghost-btn" onclick="togglePanel('backlogPanel')">Backlog (<span id="backlogCount">32</span>)</button>
+    <button class="ghost-btn primary-sync" onclick="syncToSheetDB()">Sync DB</button>
+  </div>
+
+  <section class="full-app-drawer">
+    <div id="goalsPanel" class="panel-card">
+      <div class="panel-header">
+        <span>Long-Term Goal Projections (2026 -> End of 2027)</span>
+      </div>
+      <div class="goal-grid" id="goalGrid"></div>
+    </div>
+
+    <div id="backlogPanel" class="panel-card">
+      <div class="panel-header">
+        <span>6-Tier Backlog Database</span>
+      </div>
+      <div class="tier-filter" id="tierFilter"></div>
+      <div id="backlogList"></div>
+    </div>
+  </section>
+
+  <!-- Custom Numpad Modal for Fourth (+) Extra Pushup Set Throughout the Day -->
+  <div id="numpadModal" class="numpad-backdrop" onclick="if(event.target===this)closeNumpad()">
+    <div class="numpad-card">
+      <div class="numpad-header">
+        <div>
+          <div class="numpad-title">Add Extra Pushups Set</div>
+          <div class="numpad-sub" id="numpadRunningSub">Throughout-day extra reps</div>
+        </div>
+        <button class="step-btn" onclick="closeNumpad()">✕</button>
+      </div>
+      <div class="numpad-display">
+        <span class="numpad-display-hint">+ REPS</span>
+        <span id="numpadValue">0</span>
+      </div>
+      <div class="numpad-grid">
+        <button class="num-key" onclick="pressNum('1')">1</button>
+        <button class="num-key" onclick="pressNum('2')">2</button>
+        <button class="num-key" onclick="pressNum('3')">3</button>
+        <button class="num-key" onclick="pressNum('4')">4</button>
+        <button class="num-key" onclick="pressNum('5')">5</button>
+        <button class="num-key" onclick="pressNum('6')">6</button>
+        <button class="num-key" onclick="pressNum('7')">7</button>
+        <button class="num-key" onclick="pressNum('8')">8</button>
+        <button class="num-key" onclick="pressNum('9')">9</button>
+        <button class="num-key" style="font-size:13px;color:#60a5fa;" onclick="setNumDirect('25')">+25</button>
+        <button class="num-key" onclick="pressNum('0')">0</button>
+        <button class="num-key" style="font-size:14px;color:#f87171;" onclick="pressBackspace()">⌫</button>
+      </div>
+      <div class="numpad-actions">
+        <button class="numpad-cancel" onclick="closeNumpad()">Cancel</button>
+        <button class="numpad-submit" onclick="submitExtraPushups()">Add Reps</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top-Right '+' Quick Add Modal -->
+  <div id="addModal" class="modal-backdrop" onclick="if(event.target===this)closeAddModal()">
+    <div class="modal-card">
+      <div style="font-size:14px;font-weight:700;">Quick Add Task or Timeblock</div>
+      <input id="newTaskTitle" class="form-input" type="text" placeholder="Task title (e.g. Install trailer shelves)" />
+      <select id="newTaskBucket" class="form-select" onchange="toggleTimeInput(this.value)">
+        <option value="today">Today's Timeblock Schedule</option>
+        <option value="This week">Tier 1: This week</option>
+        <option value="This month">Tier 2: This month</option>
+        <option value="YouTube">Tier 3: YouTube Ideas & Production</option>
+        <option value="Bigger projects">Tier 4: Bigger projects (Sat 4-hr block)</option>
+        <option value="Computer Tasks">Tier 5: Computer Tasks (CAD / MWI)</option>
+        <option value="General To Do">Tier 6: General To Do</option>
+      </select>
+      <input id="newTaskTime" class="form-input" type="text" placeholder="Time range (e.g. 4:30 - 5:00 PM)" />
+      <div class="modal-actions">
+        <button class="btn-sm" style="background:#1e2636;color:#cbd5e1;" onclick="closeAddModal()">Cancel</button>
+        <button class="btn-sm" style="background:var(--accent);color:#fff;" onclick="submitQuickAdd()">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let appState = null;
+    let currentDayKey = "2026-11-19";
+    let activeTier = "This week";
+    let activeTimers = {};
+    let openGearKey = null;
+    let numpadBuffer = "";
+
+    const GEAR_SVG = `
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>`;
+
+    const CHECK_SVG = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
+    const RECURRING_REGEX = /(Morning Routine|Commute to Work|Commute Home|^Work$|Dinner|Feed Dogs|Walk Dogs|Evening Peloton|Wind Down & Sleep|Daytime Buffer|Project Buffer|Workshop Tidy)/i;
+
+    function isRecurringBlock(b) {
+      if (typeof b.recurring === "boolean") return b.recurring;
+      return RECURRING_REGEX.test(b.task || "");
+    }
+
+    function getHeatLevel(pushCount) {
+      const c = Number(pushCount || 0);
+      if (c <= 0) return 0;
+      return Math.min(4, c);
+    }
+
+    function fmtSec(totalSec) {
+      const s = Math.max(0, Math.round(totalSec));
+      const m = Math.floor(s / 60);
+      const rem = s % 60;
+      return `${m}:${rem < 10 ? "0" + rem : rem}`;
+    }
+
+    function fmtSecTenths(totalSecFloat) {
+      const s = Math.max(0, totalSecFloat);
+      const m = Math.floor(s / 60);
+      const rem = Math.floor(s % 60);
+      const tenths = Math.floor((s - Math.floor(s)) * 10);
+      return `${m}:${rem < 10 ? "0" + rem : rem}.${tenths}`;
+    }
+
+    function parseMmSs(str, fallbackSec) {
+      if (!str) return fallbackSec;
+      const clean = String(str).trim();
+      if (clean.includes(":")) {
+        const parts = clean.split(":");
+        const m = parseInt(parts[0], 10) || 0;
+        const s = parseInt(parts[1], 10) || 0;
+        return m * 60 + s;
+      }
+      return parseInt(clean, 10) || fallbackSec;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2000);
+    }
+
+    function getHoldConfig() {
+      if (!appState.holdConfig) {
+        appState.holdConfig = {
+          plankTargetSec: 105,
+          plankGoalSec: 300,
+          horseTargetSec: 80,
+          horseGoalSec: 240,
+          countdownSec: 3
+        };
+      }
+      return appState.holdConfig;
+    }
+
+    function getPushupSetConfig() {
+      if (!appState.pushupSetConfig || appState.pushupSetConfig.length !== 3) {
+        appState.pushupSetConfig = [33, 33, 34];
+      }
+      return appState.pushupSetConfig;
+    }
+
+    function ensureDayWorkoutData(day) {
+      day.metrics = day.metrics || {};
+      if (!Array.isArray(day.metrics.pushup_sets_done) || day.metrics.pushup_sets_done.length !== 3) {
+        const was100 = Number(day.metrics.pushups_morning || 0) >= 100;
+        day.metrics.pushup_sets_done = [was100, was100, was100];
+      }
+      if (!Array.isArray(day.metrics.pushup_extra_log)) {
+        const existingDay = Number(day.metrics.pushups_day || 0);
+        day.metrics.pushup_extra_log = existingDay > 0 ? [existingDay] : [];
+      }
+      if (typeof day.metrics.plank_done !== "boolean") day.metrics.plank_done = false;
+      if (typeof day.metrics.horse_done !== "boolean") day.metrics.horse_done = false;
+      if (typeof day.metrics.peloton_bike_done !== "boolean") day.metrics.peloton_bike_done = false;
+      if (typeof day.metrics.peloton_stretch_done !== "boolean") day.metrics.peloton_stretch_done = false;
+      if (typeof day.metrics.peloton_ab_done !== "boolean") day.metrics.peloton_ab_done = false;
+      recalcPushupTotals(day);
+    }
+
+    function recalcPushupTotals(day) {
+      const cfg = getPushupSetConfig();
+      const doneArr = day.metrics.pushup_sets_done || [false, false, false];
+      let amTotal = 0;
+      for (let i = 0; i < 3; i++) {
+        if (doneArr[i]) amTotal += Number(cfg[i] || 0);
+      }
+      const extraLog = day.metrics.pushup_extra_log || [];
+      const extraTotal = extraLog.reduce((acc, v) => acc + Number(v || 0), 0);
+
+      day.metrics.pushups_morning = amTotal;
+      day.metrics.pushups_morning_sets = cfg.join("/");
+      day.metrics.pushups_day = extraTotal;
+    }
+
+    /* "Not Today" — Increments pushCount (turning it progressively redder) & pushes task to next day */
+    function pushTaskNotToday(blockIdx) {
+      const dayKeys = Object.keys(appState.days).sort();
+      const curDayIdx = dayKeys.indexOf(currentDayKey);
+      const curDay = appState.days[currentDayKey];
+      const block = curDay.blocks[blockIdx];
+      if (!block) return;
+
+      const newPushCount = Number(block.pushCount || 0) + 1;
+      block.pushCount = newPushCount;
+
+      // Also bump matching backlog item's pushCount if it exists
+      const matchingBacklog = (appState.backlog || []).find(
+        x => x.title && block.task && (block.task.toLowerCase().includes(x.title.toLowerCase().slice(0, 14)))
+      );
+      if (matchingBacklog) {
+        matchingBacklog.pushCount = Math.max(Number(matchingBacklog.pushCount || 0) + 1, newPushCount);
+      }
+
+      // If there is a next day in the schedule, move/insert the task into tomorrow's afternoon project window
+      if (curDayIdx >= 0 && curDayIdx + 1 < dayKeys.length) {
+        const nextDayKey = dayKeys[curDayIdx + 1];
+        const nextDay = appState.days[nextDayKey];
+
+        // Remove from today's blocks and re-number rows
+        curDay.blocks.splice(blockIdx, 1);
+        curDay.blocks.forEach((b, i) => { b.row = i + 1; });
+
+        // Find ideal insertion slot in tomorrow (right before Dinner, or row 6)
+        let insertIdx = nextDay.blocks.findIndex(b => /Dinner/i.test(b.task));
+        if (insertIdx < 0) insertIdx = Math.min(5, nextDay.blocks.length);
+
+        const pushedBlock = {
+          row: insertIdx + 1,
+          time: block.time || "3:15 - 5:00 PM",
+          task: block.task,
+          completed: false,
+          recurring: false,
+          pushCount: newPushCount,
+          metricKeys: []
+        };
+        nextDay.blocks.splice(insertIdx, 0, pushedBlock);
+        nextDay.blocks.forEach((b, i) => { b.row = i + 1; });
+
+        showToast(`Pushed to ${nextDay.label} (Pushed ${newPushCount}x — getting redder!)`);
+      } else {
+        // Last day of loaded week: increment heat in place so user sees the red warning immediately
+        showToast(`Marked Not Today (Pushed ${newPushCount}x — urgency increased!)`);
+      }
+
+      renderAll();
+      saveState(true);
+    }
+
+    function pushBacklogItemNotToday(id) {
+      const item = (appState.backlog || []).find(x => x.id === id);
+      if (!item) return;
+      item.pushCount = Number(item.pushCount || 0) + 1;
+      renderBacklog();
+      saveState(true);
+      showToast(`Pushed "${item.title.slice(0, 22)}..." (${item.pushCount}x)`);
+    }
+
+    function togglePushupAll() {
+      const day = appState.days[currentDayKey];
+      ensureDayWorkoutData(day);
+      const done = day.metrics.pushup_sets_done;
+      const allDone = done[0] && done[1] && done[2];
+      day.metrics.pushup_sets_done = [!allDone, !allDone, !allDone];
+      recalcPushupTotals(day);
+      renderAll();
+      saveState(true);
+    }
+
+    function togglePushupSet(setIdx) {
+      const day = appState.days[currentDayKey];
+      ensureDayWorkoutData(day);
+      day.metrics.pushup_sets_done[setIdx] = !day.metrics.pushup_sets_done[setIdx];
+      recalcPushupTotals(day);
+      renderAll();
+      saveState(true);
+    }
+
+    function toggleWorkoutDone(field) {
+      const day = appState.days[currentDayKey];
+      ensureDayWorkoutData(day);
+      day.metrics[field] = !day.metrics[field];
+      renderAll();
+      saveState(true);
+    }
+
+    function setPelotonDuration(metricKey, doneKey, mins) {
+      const day = appState.days[currentDayKey];
+      ensureDayWorkoutData(day);
+      day.metrics[metricKey] = mins;
+      day.metrics[doneKey] = mins > 0;
+      renderAll();
+      saveState(true);
+    }
+
+    function toggleGear(key) {
+      openGearKey = (openGearKey === key) ? null : key;
+      renderAll();
+    }
+
+    function savePushupSetConfig() {
+      const s1 = Math.max(1, parseInt(document.getElementById("gearSet0").value, 10) || 33);
+      const s2 = Math.max(1, parseInt(document.getElementById("gearSet1").value, 10) || 33);
+      const s3 = Math.max(1, parseInt(document.getElementById("gearSet2").value, 10) || 34);
+      appState.pushupSetConfig = [s1, s2, s3];
+      openGearKey = null;
+      const day = appState.days[currentDayKey];
+      recalcPushupTotals(day);
+      renderAll();
+      saveState(false);
+      showToast(`Set targets updated: ${s1}/${s2}/${s3}`);
+    }
+
+    function saveHoldConfig(key) {
+      const hc = getHoldConfig();
+      const targetStr = document.getElementById(`gearHoldTarget-${key}`).value;
+      const cdVal = Math.max(0, parseInt(document.getElementById(`gearHoldCd-${key}`).value, 10) || 0);
+      hc.countdownSec = cdVal;
+      if (key === "plank") {
+        hc.plankTargetSec = parseMmSs(targetStr, 105);
+      } else {
+        hc.horseTargetSec = parseMmSs(targetStr, 80);
+      }
+      openGearKey = null;
+      renderAll();
+      saveState(false);
+      showToast(`Updated ${key === 'plank' ? 'Plank' : 'Horse Stance'} baseline & countdown`);
+    }
+
+    /* Numpad functions for 4th (+) Extra Pushups button */
+    function openNumpad() {
+      numpadBuffer = "";
+      document.getElementById("numpadValue").textContent = "0";
+      const day = appState.days[currentDayKey];
+      ensureDayWorkoutData(day);
+      const extraTotal = day.metrics.pushups_day || 0;
+      const amTotal = day.metrics.pushups_morning || 0;
+      document.getElementById("numpadRunningSub").textContent =
+        `Current today: ${amTotal} AM + ${extraTotal} Extra = ${amTotal + extraTotal} Total`;
+      document.getElementById("numpadModal").classList.add("open");
+    }
+
+    function closeNumpad() {
+      document.getElementById("numpadModal").classList.remove("open");
+    }
+
+    function pressNum(digit) {
+      if (numpadBuffer.length >= 3) return;
+      if (numpadBuffer === "0") numpadBuffer = digit;
+      else numpadBuffer += digit;
+      document.getElementById("numpadValue").textContent = numpadBuffer || "0";
+    }
+
+    function setNumDirect(valStr) {
+      numpadBuffer = valStr;
+      document.getElementById("numpadValue").textContent = numpadBuffer;
+    }
+
+    function pressBackspace() {
+      numpadBuffer = numpadBuffer.slice(0, -1);
+      document.getElementById("numpadValue").textContent = numpadBuffer || "0";
+    }
+
+    function submitExtraPushups() {
+      const reps = parseInt(numpadBuffer, 10) || 0;
+      if (reps <= 0) {
+        closeNumpad();
+        return;
+      }
+      const day = appState.days[currentDayKey];
+      ensureDayWorkoutData(day);
+      day.metrics.pushup_extra_log.push(reps);
+      recalcPushupTotals(day);
+      closeNumpad();
+      renderAll();
+      saveState(true);
+      showToast(`+${reps} pushups added (Total: ${day.metrics.pushups_morning + day.metrics.pushups_day})`);
+    }
+
+    function removeExtraSubmission(idx) {
+      const day = appState.days[currentDayKey];
+      ensureDayWorkoutData(day);
+      const removed = day.metrics.pushup_extra_log.splice(idx, 1);
+      recalcPushupTotals(day);
+      renderAll();
+      saveState(true);
+      showToast(`Removed +${removed[0]} extra set`);
+    }
+
+    const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbz64ug5Ys6N4Kz8vEzsJfOyxhf6bKtqSD63CLuWjzDfTds_pBdH4RH6Pl8spCZx-LSxNg/exec";
+    const IS_LOCAL_DEV = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const IS_GAS_FRAME = typeof google !== "undefined" && google.script && google.script.run;
+
+    async function loadState(manualRefresh = false) {
+      if (IS_GAS_FRAME) {
+        google.script.run.withSuccessHandler(function(data) {
+          appState = data;
+          currentDayKey = appState.activeDay || Object.keys(appState.days)[0];
+          renderAll();
+          if (manualRefresh) showToast("Refreshed from Cloud");
+        }).readLiveState();
+        return;
+      }
+
+      if (IS_LOCAL_DEV) {
+        try {
+          const res = await fetch("/api/state");
+          appState = await res.json();
+        } catch (e) {
+          const res = await fetch("schedule_state.json");
+          appState = await res.json();
+        }
+      } else {
+        // GitHub Pages / Standalone PWA: instant render from localStorage cache, then live pull from Google Sheet Cloud
+        const cached = localStorage.getItem("timeblocks_state_v1");
+        if (cached && !appState) {
+          try {
+            appState = JSON.parse(cached);
+            currentDayKey = appState.activeDay || Object.keys(appState.days)[0];
+            renderAll();
+          } catch (_) {}
+        }
+        try {
+          const res = await fetch(`${CLOUD_API_URL}?api=state&t=${Date.now()}`);
+          const liveData = await res.json();
+          if (liveData && liveData.days) {
+            appState = liveData;
+            localStorage.setItem("timeblocks_state_v1", JSON.stringify(appState));
+          }
+        } catch (e) {
+          if (!appState) {
+            showToast("Offline mode");
+            return;
+          }
+        }
+      }
+
+      currentDayKey = appState.activeDay || Object.keys(appState.days)[0];
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("toggleRow")) {
+        const r = parseInt(params.get("toggleRow"), 10);
+        const day = appState.days[currentDayKey];
+        const b = day.blocks.find(x => x.row === r);
+        if (b) {
+          b.completed = !b.completed;
+          saveState(true);
+        }
+      } else if (params.get("quickAdd") === "1") {
+        setTimeout(() => openAddModal(), 100);
+      }
+
+      renderAll();
+      if (manualRefresh) showToast("Synced with Cloud");
+    }
+
+    function selectDay(dayKey) {
+      currentDayKey = dayKey;
+      appState.activeDay = dayKey;
+      renderAll();
+      saveState(true);
+    }
+
+    function toggleBlock(idx) {
+      const day = appState.days[currentDayKey];
+      day.blocks[idx].completed = !day.blocks[idx].completed;
+      renderAll();
+      saveState(true);
+    }
+
+    function stepMetric(key, delta) {
+      const day = appState.days[currentDayKey];
+      const m = day.metrics;
+      if (key === "plank") {
+        m.plank_sec = Math.max(5, Number(m.plank_sec || 105) + delta);
+      } else if (key === "horse_stance") {
+        m.horse_sec = Math.max(5, Number(m.horse_sec || 80) + delta);
+      }
+      renderAll();
+      saveState(true);
+    }
+
+    function logBaselineHold(key, targetSec) {
+      const day = appState.days[currentDayKey];
+      const m = day.metrics;
+      if (key === "plank") {
+        m.plank_sec = targetSec;
+        m.plank_done = true;
+        showToast(`Plank baseline logged: ${fmtSec(targetSec)}`);
+      } else if (key === "horse_stance") {
+        m.horse_sec = targetSec;
+        m.horse_done = true;
+        showToast(`Horse Stance baseline logged: ${fmtSec(targetSec)}`);
+      }
+      renderAll();
+      saveState(true);
+    }
+
+    /* Full-Width Stopwatch with 3-Second Get-Set Countdown & Live Progress Fill */
+    function toggleStopwatch(key, targetSec) {
+      const day = appState.days[currentDayKey];
+      const m = day.metrics;
+      const hc = getHoldConfig();
+
+      if (activeTimers[key]) {
+        const tObj = activeTimers[key];
+        clearInterval(tObj.intervalId);
+        delete activeTimers[key];
+
+        if (tObj.phase === "countdown") {
+          showToast("Countdown cancelled");
+          renderAll();
+          return;
+        }
+
+        const elapsedSec = Math.max(1, Math.round((Date.now() - tObj.holdStartMs) / 1000));
+        if (key === "plank") {
+          m.plank_sec = elapsedSec;
+          m.plank_done = true;
+          if (elapsedSec > hc.plankTargetSec) hc.plankTargetSec = elapsedSec;
+          showToast(`Plank logged: ${fmtSec(elapsedSec)}${elapsedSec >= targetSec ? " (Target Met!)" : ""}`);
+        } else if (key === "horse_stance") {
+          m.horse_sec = elapsedSec;
+          m.horse_done = true;
+          if (elapsedSec > hc.horseTargetSec) hc.horseTargetSec = elapsedSec;
+          showToast(`Horse Stance logged: ${fmtSec(elapsedSec)}${elapsedSec >= targetSec ? " (Target Met!)" : ""}`);
+        }
+        renderAll();
+        saveState(true);
+        return;
+      }
+
+      const cdSec = Number(hc.countdownSec ?? 3);
+      const clickMs = Date.now();
+      const holdStartMs = clickMs + cdSec * 1000;
+
+      const timerState = {
+        phase: cdSec > 0 ? "countdown" : "hold",
+        clickMs,
+        holdStartMs,
+        targetSec,
+        intervalId: null
+      };
+
+      timerState.intervalId = setInterval(() => {
+        const now = Date.now();
+        const heroEl = document.getElementById(`sw-hero-${key}`);
+        const clockEl = document.getElementById(`sw-clock-${key}`);
+        const subEl = document.getElementById(`sw-sub-${key}`);
+        const pillEl = document.getElementById(`sw-pill-${key}`);
+        const fillEl = document.getElementById(`sw-fill-${key}`);
+        if (!heroEl || !clockEl) return;
+
+        if (now < holdStartMs) {
+          timerState.phase = "countdown";
+          const rem = Math.ceil((holdStartMs - now) / 1000);
+          heroEl.className = "stopwatch-hero countdown";
+          clockEl.textContent = `Get Set... ${rem}`;
+          subEl.textContent = `Get into position — timer starts at 0`;
+          pillEl.textContent = "Cancel";
+          fillEl.style.width = "0%";
+        } else {
+          timerState.phase = "hold";
+          const elapsedFloat = (now - holdStartMs) / 1000;
+          const elapsedInt = Math.floor(elapsedFloat);
+          const pct = Math.min(100, (elapsedFloat / targetSec) * 100);
+          const isPr = elapsedInt >= targetSec;
+
+          heroEl.className = "stopwatch-hero running" + (isPr ? " pr-zone" : "");
+          fillEl.className = "stopwatch-fill" + (isPr ? " pr-fill" : "");
+          fillEl.style.width = `${pct}%`;
+          clockEl.textContent = fmtSecTenths(elapsedFloat);
+
+          if (isPr) {
+            const bonus = elapsedInt - targetSec;
+            subEl.textContent = bonus > 0 ? `NEW PR! +${bonus}s above ${fmtSec(targetSec)} baseline` : `BASELINE HIT (${fmtSec(targetSec)}) — Keep holding!`;
+            pillEl.textContent = "TAP TO LOG PR";
+          } else {
+            const left = targetSec - elapsedInt;
+            subEl.textContent = `${fmtSec(left)} remaining to ${fmtSec(targetSec)} baseline`;
+            pillEl.textContent = "TAP TO STOP";
+          }
+        }
+      }, 80);
+
+      activeTimers[key] = timerState;
+      renderAll();
+    }
+
+    /* Render Top Workouts Hub (Outside of Timeblocks) */
+    function renderWorkoutsHub(day) {
+      ensureDayWorkoutData(day);
+      const m = day.metrics;
+      const cfg = getPushupSetConfig();
+      const hc = getHoldConfig();
+
+      const doneSets = m.pushup_sets_done;
+      const pushupsAllDone = Boolean(doneSets[0] && doneSets[1] && doneSets[2]);
+      const extraLog = m.pushup_extra_log || [];
+      const extraTotal = m.pushups_day || 0;
+      const amTotal = m.pushups_morning || 0;
+      const grandTotal = amTotal + extraTotal;
+
+      const workoutChecks = [
+        pushupsAllDone,
+        Boolean(m.plank_done),
+        Boolean(m.horse_done),
+        Boolean(m.peloton_bike_done),
+        Boolean(m.peloton_stretch_done)
+      ];
+      const wDoneCount = workoutChecks.filter(Boolean).length;
+      document.getElementById("workoutProgressBadge").textContent = `${wDoneCount}/5 Completed`;
+
+      const setBtnsHtml = [0, 1, 2].map(i => `
+        <button class="pushup-set-btn ${doneSets[i] ? 'done' : ''}" onclick="event.stopPropagation(); togglePushupSet(${i})">
+          ${doneSets[i] ? "✓ " : ""}${cfg[i]}
+        </button>
+      `).join("");
+
+      const plusBtnLabel = extraTotal > 0 ? `+ (${extraTotal})` : `+`;
+      const extraPillsHtml = extraLog.map((val, idx) =>
+        `<span class="extra-pill" title="Tap to remove" onclick="event.stopPropagation(); removeExtraSubmission(${idx})">+${val}</span>`
+      ).join("");
+
+      const pushupsCardHTML = `
+        <div class="workout-card ${pushupsAllDone ? 'completed' : ''}">
+          <div class="row-main" onclick="togglePushupAll()">
+            <div class="bubble-circle">${CHECK_SVG}</div>
+            <div class="row-text">
+              <div class="row-line">
+                <div class="row-line-left">
+                  <span class="workout-title">Pushups</span>
+                  <span class="workout-sub-pill">${grandTotal} reps</span>
+                </div>
+                <button class="gear-btn ${openGearKey === 'pushups' ? 'active' : ''}" title="Adjust Set Numbers" onclick="event.stopPropagation(); toggleGear('pushups')">
+                  ${GEAR_SVG}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="pushup-section" onclick="event.stopPropagation()">
+            <div class="pushup-sets-row">
+              ${setBtnsHtml}
+              <button class="pushup-set-btn extra-plus ${extraTotal > 0 ? 'has-extra' : ''}" onclick="openNumpad()">
+                ${plusBtnLabel}
+              </button>
+            </div>
+            <div class="pushup-summary-line">
+              <div class="extra-history-pills">
+                <span>AM: ${amTotal}/${cfg[0]+cfg[1]+cfg[2]}</span>
+                ${extraPillsHtml}
+              </div>
+              <span class="pushup-total-badge">Total: ${grandTotal}</span>
+            </div>
+            <div class="gear-config-drawer ${openGearKey === 'pushups' ? 'open' : ''}">
+              <div style="font-size:11px;font-weight:700;color:var(--text-muted);">Adjust Morning 3-Set Rep Targets:</div>
+              <div class="gear-inputs-grid">
+                <input id="gearSet0" class="gear-set-input" type="number" value="${cfg[0]}" />
+                <input id="gearSet1" class="gear-set-input" type="number" value="${cfg[1]}" />
+                <input id="gearSet2" class="gear-set-input" type="number" value="${cfg[2]}" />
+                <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 11px;" onclick="savePushupSetConfig()">Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      function buildHoldCard(key, title, doneField) {
+        const isPlank = key === "plank";
+        const curSec = Number(isPlank ? (m.plank_sec ?? 105) : (m.horse_sec ?? 80));
+        const targetSec = Number(isPlank ? (hc.plankTargetSec ?? 105) : (hc.horseTargetSec ?? 80));
+        const goalSec = Number(isPlank ? (hc.plankGoalSec ?? 300) : (hc.horseGoalSec ?? 240));
+        const isDone = Boolean(m[doneField]);
+        const pct = Math.min(100, Math.round((curSec / targetSec) * 100));
+        const isPr = curSec >= targetSec;
+
+        return `
+          <div class="workout-card ${isDone ? 'completed' : ''}">
+            <div class="row-main" onclick="toggleWorkoutDone('${doneField}')">
+              <div class="bubble-circle">${CHECK_SVG}</div>
+              <div class="row-text">
+                <div class="row-line">
+                  <div class="row-line-left">
+                    <span class="workout-title">${title}</span>
+                    <span class="workout-sub-pill">${fmtSec(curSec)} / ${fmtSec(targetSec)}</span>
+                  </div>
+                  <button class="gear-btn ${openGearKey === key ? 'active' : ''}" title="Configure Target & Countdown" onclick="event.stopPropagation(); toggleGear('${key}')">
+                    ${GEAR_SVG}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="stopwatch-section" onclick="event.stopPropagation()">
+              <div id="sw-hero-${key}" class="stopwatch-hero" onclick="toggleStopwatch('${key}', ${targetSec})">
+                <div id="sw-fill-${key}" class="stopwatch-fill ${isPr ? 'pr-fill' : ''}" style="width: ${pct}%;"></div>
+                <div class="stopwatch-left">
+                  <div id="sw-clock-${key}" class="stopwatch-clock">${fmtSec(curSec)}</div>
+                  <div id="sw-sub-${key}" class="stopwatch-sub">Baseline: ${fmtSec(targetSec)} · ${hc.countdownSec}s Get-Set</div>
+                </div>
+                <div id="sw-pill-${key}" class="stopwatch-action-pill">▶ Start Hold</div>
+              </div>
+              <div class="stopwatch-controls-row">
+                <div class="sw-quick-btns">
+                  <button class="sw-chip-btn" onclick="stepMetric('${key}', -5)">-5s</button>
+                  <button class="sw-chip-btn" onclick="stepMetric('${key}', 5)">+5s</button>
+                  <button class="sw-chip-btn baseline-btn" onclick="logBaselineHold('${key}', ${targetSec})">✓ Log ${fmtSec(targetSec)}</button>
+                </div>
+                <span class="sw-goal-text">2027 Goal: ${fmtSec(goalSec)}</span>
+              </div>
+              <div class="gear-config-drawer ${openGearKey === key ? 'open' : ''}">
+                <div style="font-size:11px;font-weight:700;color:var(--text-muted);">Adjust Baseline Target (mm:ss) & Get-Set Countdown (sec):</div>
+                <div class="gear-hold-grid">
+                  <input id="gearHoldTarget-${key}" class="gear-set-input" type="text" value="${fmtSec(targetSec)}" placeholder="1:45" />
+                  <input id="gearHoldCd-${key}" class="gear-set-input" type="number" value="${hc.countdownSec}" placeholder="3" />
+                  <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 11px;" onclick="saveHoldConfig('${key}')">Save</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      const bikeMin = Number(m.peloton_bike ?? 10);
+      const bikeDone = Boolean(m.peloton_bike_done);
+      const strMin = Number(m.peloton_stretch ?? 10);
+      const strDone = Boolean(m.peloton_stretch_done);
+
+      const pelotonGridHTML = `
+        <div class="peloton-grid">
+          <div class="peloton-mini-card ${bikeDone ? 'completed' : ''}">
+            <div class="peloton-top" onclick="toggleWorkoutDone('peloton_bike_done')">
+              <div class="peloton-top-left">
+                <div class="bubble-circle" style="width:20px;height:20px;">${CHECK_SVG}</div>
+                <span style="font-size:13px;font-weight:700;">Peloton Ride</span>
+              </div>
+              <span class="workout-sub-pill">${bikeMin}m</span>
+            </div>
+            <div class="peloton-btns-row">
+              ${[10, 15, 20, 30].map(v => `
+                <button class="peloton-dur-btn ${bikeDone && bikeMin === v ? 'selected' : ''}" onclick="setPelotonDuration('peloton_bike', 'peloton_bike_done', ${v})">${v}m</button>
+              `).join("")}
+            </div>
+          </div>
+
+          <div class="peloton-mini-card ${strDone ? 'completed' : ''}">
+            <div class="peloton-top" onclick="toggleWorkoutDone('peloton_stretch_done')">
+              <div class="peloton-top-left">
+                <div class="bubble-circle" style="width:20px;height:20px;">${CHECK_SVG}</div>
+                <span style="font-size:13px;font-weight:700;">Stretch</span>
+              </div>
+              <span class="workout-sub-pill">${strMin}m</span>
+            </div>
+            <div class="peloton-btns-row">
+              ${[5, 10, 15, 20].map(v => `
+                <button class="peloton-dur-btn ${strDone && strMin === v ? 'selected' : ''}" onclick="setPelotonDuration('peloton_stretch', 'peloton_stretch_done', ${v})">${v}m</button>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("workoutsHub").innerHTML =
+        pushupsCardHTML +
+        buildHoldCard("plank", "Plank Hold", "plank_done") +
+        buildHoldCard("horse_stance", "Horse Stance Hold", "horse_done") +
+        pelotonGridHTML;
+    }
+
+    function renderAll() {
+      if (!appState || !appState.days[currentDayKey]) return;
+      const day = appState.days[currentDayKey];
+      ensureDayWorkoutData(day);
+
+      document.getElementById("dayTitle").textContent = day.label;
+      const done = day.blocks.filter(b => b.completed).length;
+      document.getElementById("progressPill").textContent = `${done}/${day.blocks.length}`;
+      document.getElementById("scheduleProgressBadge").textContent = `${done}/${day.blocks.length} Blocks`;
+
+      const sel = document.getElementById("daySelect");
+      sel.innerHTML = "";
+      Object.entries(appState.days).forEach(([k, d]) => {
+        const opt = document.createElement("option");
+        opt.value = k;
+        opt.textContent = `${d.label} (${d.dayType})`;
+        if (k === currentDayKey) opt.selected = true;
+        sel.appendChild(opt);
+      });
+
+      // 1. Render Top Workouts Hub
+      renderWorkoutsHub(day);
+
+      // 2. Render Clean Timeblock Schedule List Below (with inline 'Not Today' button on non-recurring tasks)
+      const list = document.getElementById("bubbleList");
+      list.innerHTML = "";
+
+      day.blocks.forEach((b, idx) => {
+        const pushCount = Number(b.pushCount || 0);
+        const heatLvl = getHeatLevel(pushCount);
+        const heatClass = heatLvl > 0 ? ` push-heat-${heatLvl}` : "";
+        const recurring = isRecurringBlock(b);
+
+        const rowEl = document.createElement("div");
+        rowEl.className = "bubble-row" + (b.completed ? " completed" : "") + heatClass;
+
+        let notTodayBtnHTML = "";
+        if (!recurring && !b.completed) {
+          const btnHeatClass = heatLvl > 0 ? ` heat-${heatLvl}` : "";
+          const label = pushCount > 0 ? `Not Today (${pushCount}x) ↷` : `Not Today ↷`;
+          notTodayBtnHTML = `
+            <button class="not-today-btn${btnHeatClass}" title="Push task to tomorrow (gets redder each push)" onclick="event.stopPropagation(); pushTaskNotToday(${idx})">
+              ${label}
+            </button>
+          `;
+        }
+
+        rowEl.innerHTML = `
+          <div class="row-main" onclick="toggleBlock(${idx})">
+            <div class="bubble-circle">${CHECK_SVG}</div>
+            <div class="row-text">
+              <div class="row-line">
+                <div class="row-line-left">
+                  <span class="time-str">${b.time}</span>
+                  <span class="task-str">${b.task}</span>
+                </div>
+                ${notTodayBtnHTML}
+              </div>
+            </div>
+          </div>
+        `;
+        list.appendChild(rowEl);
+      });
+
+      const goalGrid = document.getElementById("goalGrid");
+      if (goalGrid && appState.goals) {
+        goalGrid.innerHTML = appState.goals.map(g => `
+          <div class="goal-box">
+            <div class="goal-box-name">${g.name}</div>
+            <div class="goal-box-nums">${g.baselineDisplay} -> ${g.targetDisplay}</div>
+            <div class="goal-box-pace">${g.pace}</div>
+          </div>
+        `).join("");
+      }
+
+      renderBacklog();
+    }
+
+    function renderBacklog() {
+      const items = (appState.backlog || []).filter(x => x.status !== "Completed");
+      document.getElementById("backlogCount").textContent = items.length;
+      const tiers = ["This week", "This month", "YouTube", "Bigger projects", "Computer Tasks", "General To Do"];
+      const tf = document.getElementById("tierFilter");
+      tf.innerHTML = tiers.map(t => `
+        <span class="tier-chip ${t === activeTier ? 'active' : ''}" onclick="activeTier='${t}';renderBacklog()">${t}</span>
+      `).join("");
+
+      const filtered = items.filter(x => x.tier === activeTier);
+      const bl = document.getElementById("backlogList");
+      bl.innerHTML = filtered.map(x => {
+        const pCount = Number(x.pushCount || 0);
+        const hLvl = getHeatLevel(pCount);
+        const rowHeat = hLvl > 0 ? ` push-heat-${hLvl}` : "";
+        const btnHeat = hLvl > 0 ? ` heat-${hLvl}` : "";
+        const pushLabel = pCount > 0 ? `Not Today (${pCount}x)` : `Not Today`;
+        return `
+          <div class="backlog-item${rowHeat}">
+            <span style="flex:1;min-width:0;">${x.starred ? "[*] " : ""}${x.title} <small style="color:var(--text-dim)">(${x.env})</small></span>
+            <div style="display:flex;align-items:center;gap:5px;">
+              <button class="not-today-btn${btnHeat}" onclick="pushBacklogItemNotToday('${x.id}')">${pushLabel}</button>
+              <button class="step-btn" style="width:auto;height:21px;padding:0 8px;font-size:10.5px;" onclick="completeBacklogItem('${x.id}')">Done</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function completeBacklogItem(id) {
+      const item = (appState.backlog || []).find(x => x.id === id);
+      if (item) {
+        item.status = "Completed";
+        renderBacklog();
+        saveState(false);
+      }
+    }
+
+    function togglePanel(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle("open");
+    }
+
+    function openAddModal() {
+      document.getElementById("addModal").classList.add("open");
+      document.getElementById("newTaskTitle").focus();
+    }
+
+    function closeAddModal() {
+      document.getElementById("addModal").classList.remove("open");
+    }
+
+    function toggleTimeInput(val) {
+      document.getElementById("newTaskTime").style.display = val === "today" ? "block" : "none";
+    }
+
+    function submitQuickAdd() {
+      const title = document.getElementById("newTaskTitle").value.trim();
+      const bucket = document.getElementById("newTaskBucket").value;
+      const timeStr = document.getElementById("newTaskTime").value.trim() || "3:15 - 5:00 PM";
+      if (!title) return;
+
+      if (bucket === "today") {
+        const day = appState.days[currentDayKey];
+        day.blocks.push({
+          row: day.blocks.length + 1,
+          time: timeStr,
+          task: title,
+          completed: false,
+          recurring: false,
+          pushCount: 0,
+          metricKeys: []
+        });
+      } else {
+        appState.backlog = appState.backlog || [];
+        appState.backlog.unshift({
+          id: "T-" + Date.now().toString().slice(-4),
+          tier: bucket,
+          title: title,
+          starred: true,
+          env: "Indoor",
+          status: "Active",
+          pushCount: 0
+        });
+        activeTier = bucket;
+      }
+
+      document.getElementById("newTaskTitle").value = "";
+      closeAddModal();
+      renderAll();
+      saveState(false);
+    }
+
+    async function saveState(silent = false) {
+      try {
+        localStorage.setItem("timeblocks_state_v1", JSON.stringify(appState));
+      } catch (_) {}
+
+      if (IS_GAS_FRAME) {
+        google.script.run.withSuccessHandler(function() {
+          if (!silent) showToast("Saved to Google Sheet");
+        }).writeLiveState(appState);
+        return;
+      }
+
+      if (IS_LOCAL_DEV) {
+        try {
+          await fetch("/api/state", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(appState)
+          });
+          if (!silent) showToast("Saved");
+        } catch (e) {
+          if (!silent) showToast("Saved locally");
+        }
+        return;
+      }
+
+      // GitHub Pages / Standalone PWA -> POST as text/plain (avoids CORS preflight on Google Apps Script)
+      try {
+        await fetch(CLOUD_API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(appState)
+        });
+        if (!silent) showToast("Saved to Cloud");
+      } catch (e) {
+        if (!silent) showToast("Saved locally");
+      }
+    }
+
+    async function syncToSheetDB() {
+      showToast("Syncing to Google Sheet DB...");
+      if (IS_GAS_FRAME) {
+        google.script.run.withSuccessHandler(function(res) {
+          if (res && res.ok) showToast("Synced to Google Sheet Database");
+          else showToast("Sync error");
+        }).syncDayToDatabaseTabs(currentDayKey, appState);
+        return;
+      }
+
+      if (IS_LOCAL_DEV) {
+        await saveState(true);
+        try {
+          const res = await fetch("/api/log-sheet", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ dayKey: currentDayKey })
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) showToast("Synced to Google Sheet Database");
+          else showToast("Sync failed");
+        } catch (e) {
+          showToast("Server offline");
+        }
+        return;
+      }
+
+      // GitHub Pages / Standalone PWA -> trigger log-sheet action on Cloud API
+      try {
+        await fetch(CLOUD_API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "log-sheet", dayKey: currentDayKey, state: appState })
+        });
+        showToast("Logged to Google Sheet Database");
+      } catch (e) {
+        showToast("Sync error");
+      }
+    }
+
+    loadState();
+  </script>
+</body>
+</html>

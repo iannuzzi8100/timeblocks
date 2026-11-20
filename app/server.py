@@ -45,7 +45,7 @@ class SchedulerHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path.startswith("/api/state"):
             if STATE_FILE.exists():
-                data = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+                data = json.loads(STATE_FILE.read_text(encoding="utf-8-sig"))
                 self._send_json(data)
             else:
                 self._send_json({"error": "schedule_state.json not found"}, status=404)

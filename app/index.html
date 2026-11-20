@@ -6,7 +6,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Timeblocks" />
-  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#080b10" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="manifest" href="manifest.json" />
   <title>Timeblocks</title>
   <style>
     :root {
@@ -1121,6 +1124,7 @@
     </div>
     <div class="top-actions">
       <select id="daySelect" class="day-select" onchange="selectDay(this.value)"></select>
+      <button class="icon-box-btn" onclick="loadState(true)" title="Refresh Cloud State" style="font-size:15px;color:var(--text-muted);">↻</button>
       <button class="icon-box-btn add-btn" onclick="openAddModal()" title="Quick Add Task or Goal">+</button>
     </div>
   </header>
@@ -1530,23 +1534,54 @@
       showToast(`Removed +${removed[0]} extra set`);
     }
 
-    async function loadState() {
-      if (typeof google !== "undefined" && google.script && google.script.run) {
+    const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbz64ug5Ys6N4Kz8vEzsJfOyxhf6bKtqSD63CLuWjzDfTds_pBdH4RH6Pl8spCZx-LSxNg/exec";
+    const IS_LOCAL_DEV = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const IS_GAS_FRAME = typeof google !== "undefined" && google.script && google.script.run;
+
+    async function loadState(manualRefresh = false) {
+      if (IS_GAS_FRAME) {
         google.script.run.withSuccessHandler(function(data) {
           appState = data;
           currentDayKey = appState.activeDay || Object.keys(appState.days)[0];
           renderAll();
+          if (manualRefresh) showToast("Refreshed from Cloud");
         }).readLiveState();
         return;
       }
 
-      try {
-        const res = await fetch("/api/state");
-        appState = await res.json();
-      } catch (e) {
-        const res = await fetch("schedule_state.json");
-        appState = await res.json();
+      if (IS_LOCAL_DEV) {
+        try {
+          const res = await fetch("/api/state");
+          appState = await res.json();
+        } catch (e) {
+          const res = await fetch("schedule_state.json");
+          appState = await res.json();
+        }
+      } else {
+        // GitHub Pages / Standalone PWA: instant render from localStorage cache, then live pull from Google Sheet Cloud
+        const cached = localStorage.getItem("timeblocks_state_v1");
+        if (cached && !appState) {
+          try {
+            appState = JSON.parse(cached);
+            currentDayKey = appState.activeDay || Object.keys(appState.days)[0];
+            renderAll();
+          } catch (_) {}
+        }
+        try {
+          const res = await fetch(`${CLOUD_API_URL}?api=state&t=${Date.now()}`);
+          const liveData = await res.json();
+          if (liveData && liveData.days) {
+            appState = liveData;
+            localStorage.setItem("timeblocks_state_v1", JSON.stringify(appState));
+          }
+        } catch (e) {
+          if (!appState) {
+            showToast("Offline mode");
+            return;
+          }
+        }
       }
+
       currentDayKey = appState.activeDay || Object.keys(appState.days)[0];
 
       const params = new URLSearchParams(window.location.search);
@@ -1563,6 +1598,7 @@
       }
 
       renderAll();
+      if (manualRefresh) showToast("Synced with Cloud");
     }
 
     function selectDay(dayKey) {
@@ -2049,19 +2085,40 @@
     }
 
     async function saveState(silent = false) {
-      if (typeof google !== "undefined" && google.script && google.script.run) {
+      try {
+        localStorage.setItem("timeblocks_state_v1", JSON.stringify(appState));
+      } catch (_) {}
+
+      if (IS_GAS_FRAME) {
         google.script.run.withSuccessHandler(function() {
           if (!silent) showToast("Saved to Google Sheet");
         }).writeLiveState(appState);
         return;
       }
+
+      if (IS_LOCAL_DEV) {
+        try {
+          await fetch("/api/state", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(appState)
+          });
+          if (!silent) showToast("Saved");
+        } catch (e) {
+          if (!silent) showToast("Saved locally");
+        }
+        return;
+      }
+
+      // GitHub Pages / Standalone PWA -> POST as text/plain (avoids CORS preflight on Google Apps Script)
       try {
-        await fetch("/api/state", {
+        await fetch(CLOUD_API_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(appState)
         });
-        if (!silent) showToast("Saved");
+        if (!silent) showToast("Saved to Cloud");
       } catch (e) {
         if (!silent) showToast("Saved locally");
       }
@@ -2069,28 +2126,42 @@
 
     async function syncToSheetDB() {
       showToast("Syncing to Google Sheet DB...");
-      if (typeof google !== "undefined" && google.script && google.script.run) {
+      if (IS_GAS_FRAME) {
         google.script.run.withSuccessHandler(function(res) {
           if (res && res.ok) showToast("Synced to Google Sheet Database");
           else showToast("Sync error");
         }).syncDayToDatabaseTabs(currentDayKey, appState);
         return;
       }
-      await saveState(true);
-      try {
-        const res = await fetch("/api/log-sheet", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ dayKey: currentDayKey })
-        });
-        const data = await res.json();
-        if (res.ok && data.ok) {
-          showToast("Synced to Google Sheet Database");
-        } else {
-          showToast("Sync failed");
+
+      if (IS_LOCAL_DEV) {
+        await saveState(true);
+        try {
+          const res = await fetch("/api/log-sheet", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ dayKey: currentDayKey })
+          });
+          const data = await res.json();
+          if (res.ok && data.ok) showToast("Synced to Google Sheet Database");
+          else showToast("Sync failed");
+        } catch (e) {
+          showToast("Server offline");
         }
+        return;
+      }
+
+      // GitHub Pages / Standalone PWA -> trigger log-sheet action on Cloud API
+      try {
+        await fetch(CLOUD_API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "log-sheet", dayKey: currentDayKey, state: appState })
+        });
+        showToast("Logged to Google Sheet Database");
       } catch (e) {
-        showToast("Server offline");
+        showToast("Sync error");
       }
     }
 
