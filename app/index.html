@@ -1362,14 +1362,18 @@
   <!-- BOTTOM SECTION: Clean Chronological Timeblock Schedule -->
   <div class="section-header">
     <span class="section-label">Timeblock Schedule</span>
-    <span class="section-badge" id="scheduleProgressBadge">4/10 Blocks</span>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span id="weatherBadge" style="font-size:10.5px;font-weight:600;color:var(--text-muted);"></span>
+      <span class="section-badge" id="scheduleProgressBadge">4/10 Blocks</span>
+    </div>
   </div>
   <main class="bubble-list" id="bubbleList"></main>
 
-  <!-- Subtle Footer Toggles for Full-App Analytics / Backlog / Sync to Google Sheet DB -->
+  <!-- Subtle Footer Toggles for Full-App Analytics / Backlog / Live Auto-Plan / Sync DB -->
   <div class="drawer-toggle-bar">
-    <button class="ghost-btn" onclick="togglePanel('goalsPanel')">2027 Projections</button>
+    <button class="ghost-btn" onclick="togglePanel('goalsPanel')">2027 Goals</button>
     <button class="ghost-btn" onclick="togglePanel('backlogPanel')">Backlog (<span id="backlogCount">32</span>)</button>
+    <button class="ghost-btn" style="color:#60a5fa;border-color:rgba(59,130,246,0.35);" onclick="triggerAutoPlan()">⚡ Auto-Plan</button>
     <button class="ghost-btn primary-sync" onclick="syncToSheetDB()">Sync DB</button>
   </div>
 
@@ -2473,6 +2477,8 @@
       const done = day.blocks.filter(b => b.completed).length;
       document.getElementById("progressPill").textContent = `${done}/${day.blocks.length}`;
       document.getElementById("scheduleProgressBadge").textContent = `${done}/${day.blocks.length} Blocks`;
+      const wxEl = document.getElementById("weatherBadge");
+      if (wxEl) wxEl.textContent = day.weather ? day.weather : "";
 
       const sel = document.getElementById("daySelect");
       sel.innerHTML = "";
@@ -2862,6 +2868,39 @@
         if (!silent) showToast("Saved to Cloud");
       } catch (e) {
         if (!silent) showToast("Saved locally");
+      }
+    }
+
+    async function triggerAutoPlan() {
+      showToast("Re-planning 7 days from Tasks_Board + FL weather...");
+      if (IS_GAS_FRAME) {
+        google.script.run.withSuccessHandler(function(updated) {
+          if (updated && updated.days) {
+            appState = updated;
+            userManuallyPickedDay = false;
+            currentDayKey = resolveInitialDayKey(appState);
+            renderAll();
+            showToast("7-Day Schedule Auto-Planned!");
+          }
+        }).replanRollingWeek();
+        return;
+      }
+
+      try {
+        const res = await fetch(`${CLOUD_API_URL}?api=replan&t=${Date.now()}`);
+        const updated = await res.json();
+        if (updated && updated.days) {
+          appState = updated;
+          try { localStorage.setItem("timeblocks_state_v1", JSON.stringify(appState)); } catch (_) {}
+          userManuallyPickedDay = false;
+          currentDayKey = resolveInitialDayKey(appState);
+          renderAll();
+          showToast("7-Day Schedule Auto-Planned!");
+        } else {
+          showToast("Deploy updated Code.gs to enable Auto-Plan");
+        }
+      } catch (e) {
+        showToast("Auto-Plan needs updated Code.gs deployed");
       }
     }
 
