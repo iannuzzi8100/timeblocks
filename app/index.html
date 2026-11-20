@@ -171,12 +171,35 @@
       border: 1px solid var(--border);
       border-radius: 13px;
       padding: 9px 11px;
-      transition: background 0.15s ease, border-color 0.15s ease;
+      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
     .bubble-row.completed {
       background: var(--card-done);
       border-color: #151b26;
+    }
+
+    /* Progressive Red Urgency Heat for Pushed Tasks (1x -> 4x+) */
+    .bubble-row.push-heat-1:not(.completed) {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.09), #111620 75%);
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    .bubble-row.push-heat-2:not(.completed) {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.18), #141218 85%);
+      border-color: rgba(239, 68, 68, 0.55);
+    }
+
+    .bubble-row.push-heat-3:not(.completed) {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.28), #1a1116 90%);
+      border-color: rgba(239, 68, 68, 0.78);
+      box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.15);
+    }
+
+    .bubble-row.push-heat-4:not(.completed) {
+      background: linear-gradient(90deg, rgba(220, 38, 38, 0.42), #231015 95%);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.28), inset 0 0 12px rgba(239, 68, 68, 0.22);
     }
 
     .row-main {
@@ -261,6 +284,61 @@
     .bubble-row.completed .task-str {
       color: var(--text-dim);
       text-decoration: line-through;
+    }
+
+    /* Inline "Not Today" Push Button — Ultra-Compact, Zero Extra Row Height */
+    .not-today-btn {
+      flex-shrink: 0;
+      height: 21px;
+      padding: 0 7px;
+      border-radius: 6px;
+      border: 1px solid #283347;
+      background: #151c28;
+      color: #94a3b8;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.14s ease;
+    }
+
+    .not-today-btn:hover {
+      border-color: #f87171;
+      color: #fca5a5;
+    }
+
+    .not-today-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Button gets progressively redder with each push */
+    .not-today-btn.heat-1 {
+      background: rgba(239, 68, 68, 0.16);
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+    }
+
+    .not-today-btn.heat-2 {
+      background: rgba(239, 68, 68, 0.28);
+      border-color: rgba(239, 68, 68, 0.7);
+      color: #fecaca;
+    }
+
+    .not-today-btn.heat-3 {
+      background: rgba(220, 38, 38, 0.48);
+      border-color: #ef4444;
+      color: #ffffff;
+    }
+
+    .not-today-btn.heat-4 {
+      background: #dc2626;
+      border-color: #f87171;
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
     }
 
     .workout-title {
@@ -665,45 +743,6 @@
       font-weight: 700;
     }
 
-    /* Inline Metric Controls for YouTube on timeblocks */
-    .inline-metrics {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 8px;
-      padding-top: 7px;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .metric-control {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-    }
-
-    .metric-title {
-      font-size: 11.5px;
-      font-weight: 600;
-      color: var(--text-muted);
-      min-width: 82px;
-    }
-
-    .metric-title small {
-      display: block;
-      font-size: 9.5px;
-      color: var(--text-dim);
-      font-weight: 500;
-    }
-
-    .control-cluster {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      flex: 1;
-      justify-content: flex-end;
-    }
-
     .step-btn {
       width: 28px;
       height: 26px;
@@ -716,30 +755,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-    }
-
-    .step-btn:active {
-      background: var(--accent);
-    }
-
-    .val-pill {
-      min-width: 56px;
-      text-align: center;
-      font-size: 12.5px;
-      font-weight: 700;
-      color: #34d399;
-      background: var(--green-soft);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 3px 7px;
-      border-radius: 7px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .touch-slider {
-      width: 72px;
-      accent-color: var(--accent);
-      height: 4px;
       cursor: pointer;
     }
 
@@ -991,10 +1006,32 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 7px 4px;
+      padding: 7px 6px;
       border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
       font-size: 12.5px;
       gap: 8px;
+      margin-bottom: 3px;
+    }
+
+    .backlog-item.push-heat-1 {
+      background: rgba(239, 68, 68, 0.10);
+      border: 1px solid rgba(239, 68, 68, 0.30);
+    }
+
+    .backlog-item.push-heat-2 {
+      background: rgba(239, 68, 68, 0.20);
+      border: 1px solid rgba(239, 68, 68, 0.50);
+    }
+
+    .backlog-item.push-heat-3 {
+      background: rgba(239, 68, 68, 0.32);
+      border: 1px solid rgba(239, 68, 68, 0.75);
+    }
+
+    .backlog-item.push-heat-4 {
+      background: rgba(220, 38, 38, 0.45);
+      border: 1px solid #ef4444;
     }
 
     /* Small Top-Right '+' Quick Add Modal */
@@ -1188,7 +1225,7 @@
     let currentDayKey = "2026-11-19";
     let activeTier = "This week";
     let activeTimers = {};
-    let openGearKey = null; // 'pushups' | 'plank' | 'horse_stance' | null
+    let openGearKey = null;
     let numpadBuffer = "";
 
     const GEAR_SVG = `
@@ -1198,6 +1235,19 @@
       </svg>`;
 
     const CHECK_SVG = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
+    const RECURRING_REGEX = /(Morning Routine|Commute to Work|Commute Home|^Work$|Dinner|Feed Dogs|Walk Dogs|Evening Peloton|Wind Down & Sleep|Daytime Buffer|Project Buffer|Workshop Tidy)/i;
+
+    function isRecurringBlock(b) {
+      if (typeof b.recurring === "boolean") return b.recurring;
+      return RECURRING_REGEX.test(b.task || "");
+    }
+
+    function getHeatLevel(pushCount) {
+      const c = Number(pushCount || 0);
+      if (c <= 0) return 0;
+      return Math.min(4, c);
+    }
 
     function fmtSec(totalSec) {
       const s = Math.max(0, Math.round(totalSec));
@@ -1230,7 +1280,7 @@
       const t = document.getElementById("toast");
       t.textContent = msg;
       t.classList.add("show");
-      setTimeout(() => t.classList.remove("show"), 1900);
+      setTimeout(() => t.classList.remove("show"), 2000);
     }
 
     function getHoldConfig() {
@@ -1284,6 +1334,69 @@
       day.metrics.pushups_morning = amTotal;
       day.metrics.pushups_morning_sets = cfg.join("/");
       day.metrics.pushups_day = extraTotal;
+    }
+
+    /* "Not Today" — Increments pushCount (turning it progressively redder) & pushes task to next day */
+    function pushTaskNotToday(blockIdx) {
+      const dayKeys = Object.keys(appState.days).sort();
+      const curDayIdx = dayKeys.indexOf(currentDayKey);
+      const curDay = appState.days[currentDayKey];
+      const block = curDay.blocks[blockIdx];
+      if (!block) return;
+
+      const newPushCount = Number(block.pushCount || 0) + 1;
+      block.pushCount = newPushCount;
+
+      // Also bump matching backlog item's pushCount if it exists
+      const matchingBacklog = (appState.backlog || []).find(
+        x => x.title && block.task && (block.task.toLowerCase().includes(x.title.toLowerCase().slice(0, 14)))
+      );
+      if (matchingBacklog) {
+        matchingBacklog.pushCount = Math.max(Number(matchingBacklog.pushCount || 0) + 1, newPushCount);
+      }
+
+      // If there is a next day in the schedule, move/insert the task into tomorrow's afternoon project window
+      if (curDayIdx >= 0 && curDayIdx + 1 < dayKeys.length) {
+        const nextDayKey = dayKeys[curDayIdx + 1];
+        const nextDay = appState.days[nextDayKey];
+
+        // Remove from today's blocks and re-number rows
+        curDay.blocks.splice(blockIdx, 1);
+        curDay.blocks.forEach((b, i) => { b.row = i + 1; });
+
+        // Find ideal insertion slot in tomorrow (right before Dinner, or row 6)
+        let insertIdx = nextDay.blocks.findIndex(b => /Dinner/i.test(b.task));
+        if (insertIdx < 0) insertIdx = Math.min(5, nextDay.blocks.length);
+
+        const pushedBlock = {
+          row: insertIdx + 1,
+          time: block.time || "3:15 - 5:00 PM",
+          task: block.task,
+          completed: false,
+          recurring: false,
+          pushCount: newPushCount,
+          metricKeys: []
+        };
+        nextDay.blocks.splice(insertIdx, 0, pushedBlock);
+        nextDay.blocks.forEach((b, i) => { b.row = i + 1; });
+
+        showToast(`Pushed to ${nextDay.label} (Pushed ${newPushCount}x — getting redder!)`);
+      } else {
+        // Last day of loaded week: increment heat in place so user sees the red warning immediately
+        showToast(`Marked Not Today (Pushed ${newPushCount}x — urgency increased!)`);
+      }
+
+      renderAll();
+      saveState(true);
+    }
+
+    function pushBacklogItemNotToday(id) {
+      const item = (appState.backlog || []).find(x => x.id === id);
+      if (!item) return;
+      item.pushCount = Number(item.pushCount || 0) + 1;
+      renderBacklog();
+      saveState(true);
+      showToast(`Pushed "${item.title.slice(0, 22)}..." (${item.pushCount}x)`);
     }
 
     function togglePushupAll() {
@@ -1473,8 +1586,6 @@
         m.plank_sec = Math.max(5, Number(m.plank_sec || 105) + delta);
       } else if (key === "horse_stance") {
         m.horse_sec = Math.max(5, Number(m.horse_sec || 80) + delta);
-      } else if (key === "youtube_mins") {
-        m.youtube_mins = Math.max(0, Number(m.youtube_mins || 0) + delta);
       }
       renderAll();
       saveState(true);
@@ -1492,15 +1603,6 @@
         m.horse_done = true;
         showToast(`Horse Stance baseline logged: ${fmtSec(targetSec)}`);
       }
-      renderAll();
-      saveState(true);
-    }
-
-    function slideMetric(key, rawVal) {
-      const day = appState.days[currentDayKey];
-      const m = day.metrics;
-      const v = Number(rawVal);
-      if (key === "youtube_mins") m.youtube_mins = v;
       renderAll();
       saveState(true);
     }
@@ -1610,7 +1712,6 @@
       const amTotal = m.pushups_morning || 0;
       const grandTotal = amTotal + extraTotal;
 
-      // Count completed workout cards
       const workoutChecks = [
         pushupsAllDone,
         Boolean(m.plank_done),
@@ -1632,7 +1733,6 @@
         `<span class="extra-pill" title="Tap to remove" onclick="event.stopPropagation(); removeExtraSubmission(${idx})">+${val}</span>`
       ).join("");
 
-      // 1. Pushups Card
       const pushupsCardHTML = `
         <div class="workout-card ${pushupsAllDone ? 'completed' : ''}">
           <div class="row-main" onclick="togglePushupAll()">
@@ -1676,7 +1776,6 @@
         </div>
       `;
 
-      // 2. Plank & Horse Stance Stopwatch Cards
       function buildHoldCard(key, title, doneField) {
         const isPlank = key === "plank";
         const curSec = Number(isPlank ? (m.plank_sec ?? 105) : (m.horse_sec ?? 80));
@@ -1732,7 +1831,6 @@
         `;
       }
 
-      // 3. Peloton Bike & Post-Ride Stretch Side-by-Side Cards
       const bikeMin = Number(m.peloton_bike ?? 10);
       const bikeDone = Boolean(m.peloton_bike_done);
       const strMin = Number(m.peloton_stretch ?? 10);
@@ -1779,22 +1877,6 @@
         pelotonGridHTML;
     }
 
-    function buildYoutubeMetricHTML(m) {
-      const val = Number(m.youtube_mins ?? 0);
-      return `
-        <div class="inline-metrics">
-          <div class="metric-control" onclick="event.stopPropagation()">
-            <div class="metric-title">YT Editing<small>Session mins</small></div>
-            <div class="control-cluster">
-              <button class="step-btn" onclick="stepMetric('youtube_mins', -15)">-</button>
-              <span class="val-pill">${val}m</span>
-              <button class="step-btn" onclick="stepMetric('youtube_mins', 15)">+</button>
-              <input class="touch-slider" type="range" min="0" max="180" step="15" value="${val}" oninput="slideMetric('youtube_mins', this.value)" />
-            </div>
-          </div>
-        </div>`;
-    }
-
     function renderAll() {
       if (!appState || !appState.days[currentDayKey]) return;
       const day = appState.days[currentDayKey];
@@ -1818,13 +1900,29 @@
       // 1. Render Top Workouts Hub
       renderWorkoutsHub(day);
 
-      // 2. Render Clean Timeblock Schedule List Below
+      // 2. Render Clean Timeblock Schedule List Below (with inline 'Not Today' button on non-recurring tasks)
       const list = document.getElementById("bubbleList");
       list.innerHTML = "";
 
       day.blocks.forEach((b, idx) => {
+        const pushCount = Number(b.pushCount || 0);
+        const heatLvl = getHeatLevel(pushCount);
+        const heatClass = heatLvl > 0 ? ` push-heat-${heatLvl}` : "";
+        const recurring = isRecurringBlock(b);
+
         const rowEl = document.createElement("div");
-        rowEl.className = "bubble-row" + (b.completed ? " completed" : "");
+        rowEl.className = "bubble-row" + (b.completed ? " completed" : "") + heatClass;
+
+        let notTodayBtnHTML = "";
+        if (!recurring && !b.completed) {
+          const btnHeatClass = heatLvl > 0 ? ` heat-${heatLvl}` : "";
+          const label = pushCount > 0 ? `Not Today (${pushCount}x) ↷` : `Not Today ↷`;
+          notTodayBtnHTML = `
+            <button class="not-today-btn${btnHeatClass}" title="Push task to tomorrow (gets redder each push)" onclick="event.stopPropagation(); pushTaskNotToday(${idx})">
+              ${label}
+            </button>
+          `;
+        }
 
         rowEl.innerHTML = `
           <div class="row-main" onclick="toggleBlock(${idx})">
@@ -1835,6 +1933,7 @@
                   <span class="time-str">${b.time}</span>
                   <span class="task-str">${b.task}</span>
                 </div>
+                ${notTodayBtnHTML}
               </div>
             </div>
           </div>
@@ -1867,12 +1966,22 @@
 
       const filtered = items.filter(x => x.tier === activeTier);
       const bl = document.getElementById("backlogList");
-      bl.innerHTML = filtered.map(x => `
-        <div class="backlog-item">
-          <span>${x.starred ? "[*] " : ""}${x.title} <small style="color:var(--text-dim)">(${x.env})</small></span>
-          <button class="step-btn" style="width:auto;padding:0 8px;font-size:11px;" onclick="completeBacklogItem('${x.id}')">Done</button>
-        </div>
-      `).join("");
+      bl.innerHTML = filtered.map(x => {
+        const pCount = Number(x.pushCount || 0);
+        const hLvl = getHeatLevel(pCount);
+        const rowHeat = hLvl > 0 ? ` push-heat-${hLvl}` : "";
+        const btnHeat = hLvl > 0 ? ` heat-${hLvl}` : "";
+        const pushLabel = pCount > 0 ? `Not Today (${pCount}x)` : `Not Today`;
+        return `
+          <div class="backlog-item${rowHeat}">
+            <span style="flex:1;min-width:0;">${x.starred ? "[*] " : ""}${x.title} <small style="color:var(--text-dim)">(${x.env})</small></span>
+            <div style="display:flex;align-items:center;gap:5px;">
+              <button class="not-today-btn${btnHeat}" onclick="pushBacklogItemNotToday('${x.id}')">${pushLabel}</button>
+              <button class="step-btn" style="width:auto;height:21px;padding:0 8px;font-size:10.5px;" onclick="completeBacklogItem('${x.id}')">Done</button>
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
     function completeBacklogItem(id) {
@@ -1915,6 +2024,8 @@
           time: timeStr,
           task: title,
           completed: false,
+          recurring: false,
+          pushCount: 0,
           metricKeys: []
         });
       } else {
@@ -1925,7 +2036,8 @@
           title: title,
           starred: true,
           env: "Indoor",
-          status: "Active"
+          status: "Active",
+          pushCount: 0
         });
         activeTier = bucket;
       }
