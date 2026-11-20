@@ -1826,9 +1826,6 @@
         const rowEl = document.createElement("div");
         rowEl.className = "bubble-row" + (b.completed ? " completed" : "");
 
-        const hasYt = (b.metricKeys || []).includes("youtube_mins");
-        const metricsHTML = hasYt ? buildYoutubeMetricHTML(day.metrics) : "";
-
         rowEl.innerHTML = `
           <div class="row-main" onclick="toggleBlock(${idx})">
             <div class="bubble-circle">${CHECK_SVG}</div>
@@ -1841,7 +1838,6 @@
               </div>
             </div>
           </div>
-          ${metricsHTML}
         `;
         list.appendChild(rowEl);
       });
