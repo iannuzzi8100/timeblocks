@@ -421,7 +421,7 @@
 
     .pushup-sets-row {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1.15fr;
+      grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
       gap: 6px;
     }
 
@@ -743,8 +743,8 @@
     }
 
     .gear-inputs-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr auto;
+      display: flex;
+      flex-wrap: wrap;
       gap: 6px;
       align-items: center;
     }
@@ -757,7 +757,7 @@
     }
 
     .gear-set-input {
-      width: 100%;
+      width: 56px;
       background: #131926;
       border: 1px solid #2b374d;
       color: var(--text);
@@ -1323,7 +1323,7 @@
     }
 
     function getPushupSetConfig() {
-      if (!appState.pushupSetConfig || appState.pushupSetConfig.length !== 3) {
+      if (!Array.isArray(appState.pushupSetConfig) || appState.pushupSetConfig.length < 1) {
         appState.pushupSetConfig = [33, 33, 34];
       }
       return appState.pushupSetConfig;
@@ -1331,9 +1331,13 @@
 
     function ensureDayWorkoutData(day) {
       day.metrics = day.metrics || {};
-      if (!Array.isArray(day.metrics.pushup_sets_done) || day.metrics.pushup_sets_done.length !== 3) {
-        const was100 = Number(day.metrics.pushups_morning || 0) >= 100;
-        day.metrics.pushup_sets_done = [was100, was100, was100];
+      const cfg = getPushupSetConfig();
+      if (!Array.isArray(day.metrics.pushup_sets_done)) {
+        const wasDone = Number(day.metrics.pushups_morning || 0) >= cfg.reduce((a, b) => a + Number(b || 0), 0);
+        day.metrics.pushup_sets_done = cfg.map(() => wasDone);
+      } else if (day.metrics.pushup_sets_done.length !== cfg.length) {
+        const prev = day.metrics.pushup_sets_done;
+        day.metrics.pushup_sets_done = cfg.map((_, i) => Boolean(prev[i]));
       }
       if (!Array.isArray(day.metrics.pushup_extra_log)) {
         const existingDay = Number(day.metrics.pushups_day || 0);
@@ -1349,9 +1353,9 @@
 
     function recalcPushupTotals(day) {
       const cfg = getPushupSetConfig();
-      const doneArr = day.metrics.pushup_sets_done || [false, false, false];
+      const doneArr = day.metrics.pushup_sets_done || cfg.map(() => false);
       let amTotal = 0;
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < cfg.length; i++) {
         if (doneArr[i]) amTotal += Number(cfg[i] || 0);
       }
       const extraLog = day.metrics.pushup_extra_log || [];
@@ -1429,8 +1433,8 @@
       const day = appState.days[currentDayKey];
       ensureDayWorkoutData(day);
       const done = day.metrics.pushup_sets_done;
-      const allDone = done[0] && done[1] && done[2];
-      day.metrics.pushup_sets_done = [!allDone, !allDone, !allDone];
+      const allDone = done.length > 0 && done.every(Boolean);
+      day.metrics.pushup_sets_done = done.map(() => !allDone);
       recalcPushupTotals(day);
       renderAll();
       saveState(true);
@@ -1467,17 +1471,61 @@
       renderAll();
     }
 
+    function readGearSetInputs() {
+      const cfg = getPushupSetConfig();
+      return cfg.map((oldVal, idx) => {
+        const el = document.getElementById(`gearSet${idx}`);
+        return el ? Math.max(1, parseInt(el.value, 10) || oldVal) : oldVal;
+      });
+    }
+
+    function addPushupSetInGear() {
+      const vals = readGearSetInputs();
+      if (vals.length >= 8) return;
+      const lastVal = vals[vals.length - 1] || 25;
+      vals.push(lastVal);
+      appState.pushupSetConfig = vals;
+      renderAll();
+    }
+
+    function removePushupSetInGear() {
+      const vals = readGearSetInputs();
+      if (vals.length <= 1) return;
+      vals.pop();
+      appState.pushupSetConfig = vals;
+      renderAll();
+    }
+
     function savePushupSetConfig() {
-      const s1 = Math.max(1, parseInt(document.getElementById("gearSet0").value, 10) || 33);
-      const s2 = Math.max(1, parseInt(document.getElementById("gearSet1").value, 10) || 33);
-      const s3 = Math.max(1, parseInt(document.getElementById("gearSet2").value, 10) || 34);
-      appState.pushupSetConfig = [s1, s2, s3];
+      const newCfg = readGearSetInputs();
+      appState.pushupSetConfig = newCfg;
+      const newTotal = newCfg.reduce((a, b) => a + b, 0);
+      const splitStr = newCfg.join("/");
+
+      // Persist new baseline into Goals_DB projection metadata
+      if (Array.isArray(appState.goals)) {
+        const g = appState.goals.find(x => x.key === "pushups_morning");
+        if (g) {
+          g.baseline = newTotal;
+          g.baselineDisplay = `${newTotal} (${splitStr})`;
+        }
+      }
+
+      // Propagate new set structure to today and all future days in the schedule
+      Object.entries(appState.days || {}).forEach(([dKey, dObj]) => {
+        dObj.metrics = dObj.metrics || {};
+        if (dKey >= currentDayKey) {
+          const prevDone = Array.isArray(dObj.metrics.pushup_sets_done) ? dObj.metrics.pushup_sets_done : [];
+          dObj.metrics.pushup_sets_done = newCfg.map((_, i) => Boolean(prevDone[i]));
+          dObj.metrics.pushups_morning_sets = splitStr;
+          recalcPushupTotals(dObj);
+        }
+      });
+
       openGearKey = null;
-      const day = appState.days[currentDayKey];
-      recalcPushupTotals(day);
       renderAll();
       saveState(false);
-      showToast(`Set targets updated: ${s1}/${s2}/${s3}`);
+      showToast(`New baseline saved for future days: ${newTotal} (${splitStr})`);
     }
 
     function saveHoldConfig(key) {
@@ -1764,10 +1812,11 @@
       const hc = getHoldConfig();
 
       const doneSets = m.pushup_sets_done;
-      const pushupsAllDone = Boolean(doneSets[0] && doneSets[1] && doneSets[2]);
+      const pushupsAllDone = doneSets.length > 0 && doneSets.every(Boolean);
       const extraLog = m.pushup_extra_log || [];
       const extraTotal = m.pushups_day || 0;
       const amTotal = m.pushups_morning || 0;
+      const amTarget = cfg.reduce((a, b) => a + Number(b || 0), 0);
       const grandTotal = amTotal + extraTotal;
 
       const workoutChecks = [
@@ -1780,9 +1829,9 @@
       const wDoneCount = workoutChecks.filter(Boolean).length;
       document.getElementById("workoutProgressBadge").textContent = `${wDoneCount}/5 Completed`;
 
-      const setBtnsHtml = [0, 1, 2].map(i => `
+      const setBtnsHtml = cfg.map((reps, i) => `
         <button class="pushup-set-btn ${doneSets[i] ? 'done' : ''}" onclick="event.stopPropagation(); togglePushupSet(${i})">
-          ${doneSets[i] ? "✓ " : ""}${cfg[i]}
+          ${doneSets[i] ? "✓ " : ""}${reps}
         </button>
       `).join("");
 
@@ -1795,14 +1844,22 @@
         ? `<button class="compact-plus-btn" title="Add extra pushups" onclick="event.stopPropagation(); openNumpad()">+</button>`
         : "";
 
+      const gearSetInputsHtml = cfg.map((reps, i) =>
+        `<input id="gearSet${i}" class="gear-set-input" type="number" min="1" value="${reps}" />`
+      ).join("");
+
       const gearDrawerHTML = `
         <div class="gear-config-drawer ${openGearKey === 'pushups' ? 'open' : ''}" style="margin-top:${pushupsAllDone ? '8px' : '0'};" onclick="event.stopPropagation()">
-          <div style="font-size:11px;font-weight:700;color:var(--text-muted);">Adjust Morning 3-Set Rep Targets:</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+            <span style="font-size:11px;font-weight:700;color:var(--text-muted);">Baseline Sets (${cfg.length} sets · saved for future days):</span>
+            <div style="display:flex;gap:4px;">
+              <button class="sw-chip-btn" style="height:24px;padding:0 8px;" onclick="removePushupSetInGear()" ${cfg.length <= 1 ? 'disabled style="opacity:0.4;"' : ''}>- Set</button>
+              <button class="sw-chip-btn" style="height:24px;padding:0 8px;color:#60a5fa;border-color:rgba(59,130,246,0.4);" onclick="addPushupSetInGear()">+ Set</button>
+            </div>
+          </div>
           <div class="gear-inputs-grid">
-            <input id="gearSet0" class="gear-set-input" type="number" value="${cfg[0]}" />
-            <input id="gearSet1" class="gear-set-input" type="number" value="${cfg[1]}" />
-            <input id="gearSet2" class="gear-set-input" type="number" value="${cfg[2]}" />
-            <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 11px;" onclick="savePushupSetConfig()">Save</button>
+            ${gearSetInputsHtml}
+            <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 12px;margin-left:auto;" onclick="savePushupSetConfig()">Save</button>
           </div>
         </div>
       `;
@@ -1830,7 +1887,7 @@
             </div>
             <div class="pushup-summary-line">
               <div class="extra-history-pills">
-                <span>AM: ${amTotal}/${cfg[0]+cfg[1]+cfg[2]}</span>
+                <span>AM: ${amTotal}/${amTarget}</span>
                 ${extraPillsHtml}
               </div>
               <span class="pushup-total-badge">Total: ${grandTotal}</span>
