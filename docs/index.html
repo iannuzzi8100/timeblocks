@@ -141,6 +141,103 @@
       color: #60a5fa;
     }
 
+    .completed-workouts-btn {
+      font-size: 11px;
+      font-weight: 700;
+      color: #34d399;
+      background: var(--green-soft);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 3px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .completed-workouts-btn:active {
+      background: var(--green);
+      color: #05140d;
+    }
+
+    /* Dedicated Completed Workouts Sub-Page Overlay */
+    .subpage-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 105;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: env(safe-area-inset-top, 14px) 14px calc(env(safe-area-inset-bottom, 20px) + 20px) 14px;
+    }
+
+    .subpage-overlay.open {
+      display: flex;
+    }
+
+    .subpage-inner {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .subpage-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 11px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .completed-summary-card {
+      background: var(--card);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 13px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .completed-summary-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .completed-summary-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .completed-summary-val {
+      font-size: 15px;
+      font-weight: 800;
+      color: #34d399;
+      background: var(--green-soft);
+      padding: 5px 10px;
+      border-radius: 9px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
     /* Workouts Hub (Top Section Outside Timeblocks) */
     .workouts-hub {
       display: flex;
@@ -1154,7 +1251,12 @@
   <!-- TOP SECTION: Daily Workouts Hub (Grouped at the Top Outside of Timeblocks) -->
   <div class="section-header">
     <span class="section-label">Daily Workouts</span>
-    <span class="section-badge" id="workoutProgressBadge">0/5 Completed</span>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <button id="completedWorkoutsBtn" class="completed-workouts-btn" style="display:none;" onclick="openCompletedWorkoutsPage()">
+        ✓ Completed (<span id="completedWorkoutsBtnCount">0</span>) →
+      </button>
+      <span class="section-badge" id="workoutProgressBadge">0/5 Completed</span>
+    </div>
   </div>
   <section class="workouts-hub" id="workoutsHub"></section>
 
@@ -1188,6 +1290,18 @@
       <div id="backlogList"></div>
     </div>
   </section>
+
+  <!-- Dedicated Full-Screen Page for Completed Workouts Today -->
+  <div id="completedWorkoutsPage" class="subpage-overlay">
+    <div class="subpage-inner">
+      <div class="subpage-header">
+        <button class="back-btn" onclick="closeCompletedWorkoutsPage()">← Schedule</button>
+        <div style="font-size:15px;font-weight:800;" id="completedPageTitle">Completed Workouts</div>
+        <span class="progress-pill" id="completedPagePill">0/5</span>
+      </div>
+      <div id="completedWorkoutsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+  </div>
 
   <!-- Custom Numpad Modal for Fourth (+) Extra Pushup Set Throughout the Day -->
   <div id="numpadModal" class="numpad-backdrop" onclick="if(event.target===this)closeNumpad()">
@@ -1829,6 +1943,18 @@
       const wDoneCount = workoutChecks.filter(Boolean).length;
       document.getElementById("workoutProgressBadge").textContent = `${wDoneCount}/5 Completed`;
 
+      // Show "Completed (X) ->" button once 2 or more workouts are complete
+      const cwBtn = document.getElementById("completedWorkoutsBtn");
+      const cwCount = document.getElementById("completedWorkoutsBtnCount");
+      if (cwBtn && cwCount) {
+        if (wDoneCount >= 2) {
+          cwBtn.style.display = "inline-flex";
+          cwCount.textContent = wDoneCount;
+        } else {
+          cwBtn.style.display = "none";
+        }
+      }
+
       const setBtnsHtml = cfg.map((reps, i) => `
         <button class="pushup-set-btn ${doneSets[i] ? 'done' : ''}" onclick="event.stopPropagation(); togglePushupSet(${i})">
           ${doneSets[i] ? "✓ " : ""}${reps}
@@ -1926,22 +2052,21 @@
         const pct = Math.min(100, Math.round((curSec / targetSec) * 100));
         const isPr = curSec >= targetSec;
 
-        return `
-          <div class="workout-card ${isDone ? 'completed' : ''}">
-            <div class="row-main" onclick="toggleWorkoutDone('${doneField}')">
-              <div class="bubble-circle">${CHECK_SVG}</div>
-              <div class="row-text">
-                <div class="row-line">
-                  <div class="row-line-left">
-                    <span class="workout-title">${title}</span>
-                    <span class="workout-sub-pill">${fmtSec(curSec)} / ${fmtSec(targetSec)}</span>
-                  </div>
-                  <button class="gear-btn ${openGearKey === key ? 'active' : ''}" title="Configure Target & Countdown" onclick="event.stopPropagation(); toggleGear('${key}')">
-                    ${GEAR_SVG}
-                  </button>
-                </div>
-              </div>
+        const holdGearHTML = `
+          <div class="gear-config-drawer ${openGearKey === key ? 'open' : ''}" style="margin-top:${isDone ? '8px' : '0'};" onclick="event.stopPropagation()">
+            <div style="font-size:11px;font-weight:700;color:var(--text-muted);">Adjust Baseline Target (mm:ss) & Get-Set Countdown (sec):</div>
+            <div class="gear-hold-grid">
+              <input id="gearHoldTarget-${key}" class="gear-set-input" type="text" value="${fmtSec(targetSec)}" placeholder="1:45" />
+              <input id="gearHoldCd-${key}" class="gear-set-input" type="number" value="${hc.countdownSec}" placeholder="3" />
+              <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 11px;" onclick="saveHoldConfig('${key}')">Save</button>
             </div>
+          </div>
+        `;
+
+        // Minimize stopwatch body once complete (same compact pattern as Pushups)
+        const holdBodyHTML = isDone
+          ? holdGearHTML
+          : `
             <div class="stopwatch-section" onclick="event.stopPropagation()">
               <div id="sw-hero-${key}" class="stopwatch-hero" onclick="toggleStopwatch('${key}', ${targetSec})">
                 <div id="sw-fill-${key}" class="stopwatch-fill ${isPr ? 'pr-fill' : ''}" style="width: ${pct}%;"></div>
@@ -1959,15 +2084,27 @@
                 </div>
                 <span class="sw-goal-text">2027 Goal: ${fmtSec(goalSec)}</span>
               </div>
-              <div class="gear-config-drawer ${openGearKey === key ? 'open' : ''}">
-                <div style="font-size:11px;font-weight:700;color:var(--text-muted);">Adjust Baseline Target (mm:ss) & Get-Set Countdown (sec):</div>
-                <div class="gear-hold-grid">
-                  <input id="gearHoldTarget-${key}" class="gear-set-input" type="text" value="${fmtSec(targetSec)}" placeholder="1:45" />
-                  <input id="gearHoldCd-${key}" class="gear-set-input" type="number" value="${hc.countdownSec}" placeholder="3" />
-                  <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 11px;" onclick="saveHoldConfig('${key}')">Save</button>
+              ${holdGearHTML}
+            </div>
+          `;
+
+        return `
+          <div class="workout-card ${isDone ? 'completed' : ''}">
+            <div class="row-main" onclick="toggleWorkoutDone('${doneField}')">
+              <div class="bubble-circle">${CHECK_SVG}</div>
+              <div class="row-text">
+                <div class="row-line">
+                  <div class="row-line-left">
+                    <span class="workout-title">${title}</span>
+                    <span class="workout-sub-pill">${fmtSec(curSec)} / ${fmtSec(targetSec)}</span>
+                  </div>
+                  <button class="gear-btn ${openGearKey === key ? 'active' : ''}" title="Configure Target & Countdown" onclick="event.stopPropagation(); toggleGear('${key}')">
+                    ${GEAR_SVG}
+                  </button>
                 </div>
               </div>
             </div>
+            ${holdBodyHTML}
           </div>
         `;
       }
@@ -2132,6 +2269,83 @@
         renderBacklog();
         saveState(false);
       }
+    }
+
+    function openCompletedWorkoutsPage() {
+      const day = appState.days[currentDayKey];
+      if (!day) return;
+      ensureDayWorkoutData(day);
+      const m = day.metrics;
+      const cfg = getPushupSetConfig();
+      const hc = getHoldConfig();
+
+      const doneSets = m.pushup_sets_done || [];
+      const pushupsAllDone = doneSets.length > 0 && doneSets.every(Boolean);
+      const extraLog = m.pushup_extra_log || [];
+      const extraTotal = m.pushups_day || 0;
+      const amTotal = m.pushups_morning || 0;
+
+      const items = [];
+      if (pushupsAllDone) {
+        const extraTxt = extraLog.length > 0 ? ` + Extra (${extraLog.map(v => "+" + v).join(", ")})` : "";
+        items.push({
+          title: "Pushups",
+          sub: `Morning Baseline (${cfg.join("/")})${extraTxt}`,
+          val: `${amTotal + extraTotal} reps`
+        });
+      }
+      if (m.plank_done) {
+        items.push({
+          title: "Plank Hold",
+          sub: `Baseline Target: ${fmtSec(hc.plankTargetSec)} · 2027 Goal: ${fmtSec(hc.plankGoalSec)}`,
+          val: fmtSec(m.plank_sec || hc.plankTargetSec)
+        });
+      }
+      if (m.horse_done) {
+        items.push({
+          title: "Horse Stance Hold",
+          sub: `Baseline Target: ${fmtSec(hc.horseTargetSec)} · 2027 Goal: ${fmtSec(hc.horseGoalSec)}`,
+          val: fmtSec(m.horse_sec || hc.horseTargetSec)
+        });
+      }
+      if (m.peloton_bike_done) {
+        items.push({
+          title: "Peloton Bike Ride",
+          sub: "Daily Non-Negotiable Post-Walk Ride (Min 10m)",
+          val: `${m.peloton_bike || 10} mins`
+        });
+      }
+      if (m.peloton_stretch_done) {
+        items.push({
+          title: "Peloton Post-Ride Stretch",
+          sub: "Daily Mobility & Recovery (Min 10m)",
+          val: `${m.peloton_stretch || 10} mins`
+        });
+      }
+
+      document.getElementById("completedPageTitle").textContent = `${day.label} Completed`;
+      document.getElementById("completedPagePill").textContent = `${items.length}/5`;
+
+      const listEl = document.getElementById("completedWorkoutsList");
+      if (items.length === 0) {
+        listEl.innerHTML = `<div style="color:var(--text-muted);font-size:13px;padding:14px;text-align:center;">No workouts completed yet today.</div>`;
+      } else {
+        listEl.innerHTML = items.map(it => `
+          <div class="completed-summary-card">
+            <div>
+              <div class="completed-summary-title">✓ ${it.title}</div>
+              <div class="completed-summary-sub">${it.sub}</div>
+            </div>
+            <div class="completed-summary-val">${it.val}</div>
+          </div>
+        `).join("");
+      }
+
+      document.getElementById("completedWorkoutsPage").classList.add("open");
+    }
+
+    function closeCompletedWorkoutsPage() {
+      document.getElementById("completedWorkoutsPage").classList.remove("open");
     }
 
     function togglePanel(id) {
