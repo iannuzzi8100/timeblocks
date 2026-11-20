@@ -115,7 +115,51 @@
       color: #60a5fa;
     }
 
-    /* Bubble Checklist (Front & Center) */
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 4px 6px 4px;
+      margin-top: 4px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .section-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #60a5fa;
+    }
+
+    /* Workouts Hub (Top Section Outside Timeblocks) */
+    .workouts-hub {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .workout-card {
+      background: var(--card);
+      border: 1px solid #222e42;
+      border-radius: 13px;
+      padding: 9px 11px;
+      transition: all 0.15s ease;
+    }
+
+    .workout-card.completed {
+      background: var(--card-done);
+      border-color: #16222f;
+    }
+
+    /* Bubble Checklist (Timeblocked Schedule Below Workouts) */
     .bubble-list {
       display: flex;
       flex-direction: column;
@@ -155,7 +199,8 @@
       transition: all 0.12s ease;
     }
 
-    .bubble-row.completed .bubble-circle {
+    .bubble-row.completed .bubble-circle,
+    .workout-card.completed .bubble-circle {
       background: var(--green);
       border-color: var(--green);
     }
@@ -169,7 +214,8 @@
       opacity: 0;
     }
 
-    .bubble-row.completed .bubble-circle svg {
+    .bubble-row.completed .bubble-circle svg,
+    .workout-card.completed .bubble-circle svg {
       opacity: 1;
     }
 
@@ -189,7 +235,7 @@
     .row-line-left {
       display: flex;
       align-items: baseline;
-      gap: 6px;
+      gap: 7px;
       flex-wrap: wrap;
       min-width: 0;
     }
@@ -215,6 +261,22 @@
     .bubble-row.completed .task-str {
       color: var(--text-dim);
       text-decoration: line-through;
+    }
+
+    .workout-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .workout-sub-pill {
+      font-size: 11px;
+      font-weight: 700;
+      color: #34d399;
+      background: var(--green-soft);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-variant-numeric: tabular-nums;
     }
 
     /* Top-right gear button inside exercise rows */
@@ -249,8 +311,6 @@
     /* Dedicated Pushups 4-Button Strip: [33] [33] [34] [+] */
     .pushup-section {
       margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
       display: flex;
       flex-direction: column;
       gap: 7px;
@@ -332,8 +392,6 @@
     /* Dedicated Plank & Horse Stance Stopwatch Strip */
     .stopwatch-section {
       margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
       display: flex;
       flex-direction: column;
       gap: 7px;
@@ -341,7 +399,7 @@
 
     .stopwatch-hero {
       position: relative;
-      height: 54px;
+      height: 52px;
       border-radius: 11px;
       border: 1px solid #28354c;
       background: #0d121b;
@@ -396,7 +454,7 @@
     }
 
     .stopwatch-clock {
-      font-size: 22px;
+      font-size: 21px;
       font-weight: 800;
       letter-spacing: -0.02em;
       color: var(--text);
@@ -498,6 +556,74 @@
       text-align: right;
     }
 
+    /* Compact Peloton Grid inside Top Workouts Hub */
+    .peloton-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .peloton-mini-card {
+      background: var(--card);
+      border: 1px solid #222e42;
+      border-radius: 12px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .peloton-mini-card.completed {
+      background: var(--card-done);
+      border-color: #16222f;
+    }
+
+    .peloton-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .peloton-top-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .peloton-mini-card.completed .bubble-circle {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .peloton-mini-card.completed .bubble-circle svg {
+      opacity: 1;
+    }
+
+    .peloton-btns-row {
+      display: flex;
+      gap: 4px;
+    }
+
+    .peloton-dur-btn {
+      flex: 1;
+      height: 27px;
+      border-radius: 7px;
+      border: 1px solid #2b374d;
+      background: #172030;
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .peloton-dur-btn.selected {
+      background: var(--green-soft);
+      border-color: var(--green);
+      color: #34d399;
+    }
+
     /* Inline Gear Config Drawer */
     .gear-config-drawer {
       display: none;
@@ -539,7 +665,7 @@
       font-weight: 700;
     }
 
-    /* Inline Metric Controls for Peloton, YouTube */
+    /* Inline Metric Controls for YouTube on timeblocks */
     .inline-metrics {
       display: flex;
       flex-direction: column;
@@ -954,7 +1080,7 @@
   <header class="top-bar">
     <div class="title-group">
       <div class="day-title" id="dayTitle">Thu 11/19</div>
-      <div class="progress-pill" id="progressPill">0/19</div>
+      <div class="progress-pill" id="progressPill">4/10</div>
     </div>
     <div class="top-actions">
       <select id="daySelect" class="day-select" onchange="selectDay(this.value)"></select>
@@ -962,7 +1088,18 @@
     </div>
   </header>
 
-  <!-- Primary Bubble Schedule & Individual Exercise Checklist -->
+  <!-- TOP SECTION: Daily Workouts Hub (Grouped at the Top Outside of Timeblocks) -->
+  <div class="section-header">
+    <span class="section-label">Daily Workouts</span>
+    <span class="section-badge" id="workoutProgressBadge">0/5 Completed</span>
+  </div>
+  <section class="workouts-hub" id="workoutsHub"></section>
+
+  <!-- BOTTOM SECTION: Clean Chronological Timeblock Schedule -->
+  <div class="section-header">
+    <span class="section-label">Timeblock Schedule</span>
+    <span class="section-badge" id="scheduleProgressBadge">4/10 Blocks</span>
+  </div>
   <main class="bubble-list" id="bubbleList"></main>
 
   <!-- Subtle Footer Toggles for Full-App Analytics / Backlog / Sync to Google Sheet DB -->
@@ -1050,7 +1187,7 @@
     let appState = null;
     let currentDayKey = "2026-11-19";
     let activeTier = "This week";
-    let activeTimers = {}; // key -> { phase: 'countdown'|'hold', startMs, countdownSec, intervalId, targetSec }
+    let activeTimers = {};
     let openGearKey = null; // 'pushups' | 'plank' | 'horse_stance' | null
     let numpadBuffer = "";
 
@@ -1059,6 +1196,8 @@
         <circle cx="12" cy="12" r="3"></circle>
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
       </svg>`;
+
+    const CHECK_SVG = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
 
     function fmtSec(totalSec) {
       const s = Math.max(0, Math.round(totalSec));
@@ -1114,7 +1253,7 @@
       return appState.pushupSetConfig;
     }
 
-    function ensureDayPushupData(day) {
+    function ensureDayWorkoutData(day) {
       day.metrics = day.metrics || {};
       if (!Array.isArray(day.metrics.pushup_sets_done) || day.metrics.pushup_sets_done.length !== 3) {
         const was100 = Number(day.metrics.pushups_morning || 0) >= 100;
@@ -1124,6 +1263,11 @@
         const existingDay = Number(day.metrics.pushups_day || 0);
         day.metrics.pushup_extra_log = existingDay > 0 ? [existingDay] : [];
       }
+      if (typeof day.metrics.plank_done !== "boolean") day.metrics.plank_done = false;
+      if (typeof day.metrics.horse_done !== "boolean") day.metrics.horse_done = false;
+      if (typeof day.metrics.peloton_bike_done !== "boolean") day.metrics.peloton_bike_done = false;
+      if (typeof day.metrics.peloton_stretch_done !== "boolean") day.metrics.peloton_stretch_done = false;
+      if (typeof day.metrics.peloton_ab_done !== "boolean") day.metrics.peloton_ab_done = false;
       recalcPushupTotals(day);
     }
 
@@ -1140,18 +1284,41 @@
       day.metrics.pushups_morning = amTotal;
       day.metrics.pushups_morning_sets = cfg.join("/");
       day.metrics.pushups_day = extraTotal;
+    }
 
-      const pushBlock = (day.blocks || []).find(b => (b.metricKeys || []).includes("pushups") || (b.metricKeys || []).includes("pushups_morning"));
-      if (pushBlock && doneArr[0] && doneArr[1] && doneArr[2]) {
-        pushBlock.completed = true;
-      }
+    function togglePushupAll() {
+      const day = appState.days[currentDayKey];
+      ensureDayWorkoutData(day);
+      const done = day.metrics.pushup_sets_done;
+      const allDone = done[0] && done[1] && done[2];
+      day.metrics.pushup_sets_done = [!allDone, !allDone, !allDone];
+      recalcPushupTotals(day);
+      renderAll();
+      saveState(true);
     }
 
     function togglePushupSet(setIdx) {
       const day = appState.days[currentDayKey];
-      ensureDayPushupData(day);
+      ensureDayWorkoutData(day);
       day.metrics.pushup_sets_done[setIdx] = !day.metrics.pushup_sets_done[setIdx];
       recalcPushupTotals(day);
+      renderAll();
+      saveState(true);
+    }
+
+    function toggleWorkoutDone(field) {
+      const day = appState.days[currentDayKey];
+      ensureDayWorkoutData(day);
+      day.metrics[field] = !day.metrics[field];
+      renderAll();
+      saveState(true);
+    }
+
+    function setPelotonDuration(metricKey, doneKey, mins) {
+      const day = appState.days[currentDayKey];
+      ensureDayWorkoutData(day);
+      day.metrics[metricKey] = mins;
+      day.metrics[doneKey] = mins > 0;
       renderAll();
       saveState(true);
     }
@@ -1195,7 +1362,7 @@
       numpadBuffer = "";
       document.getElementById("numpadValue").textContent = "0";
       const day = appState.days[currentDayKey];
-      ensureDayPushupData(day);
+      ensureDayWorkoutData(day);
       const extraTotal = day.metrics.pushups_day || 0;
       const amTotal = day.metrics.pushups_morning || 0;
       document.getElementById("numpadRunningSub").textContent =
@@ -1231,7 +1398,7 @@
         return;
       }
       const day = appState.days[currentDayKey];
-      ensureDayPushupData(day);
+      ensureDayWorkoutData(day);
       day.metrics.pushup_extra_log.push(reps);
       recalcPushupTotals(day);
       closeNumpad();
@@ -1242,7 +1409,7 @@
 
     function removeExtraSubmission(idx) {
       const day = appState.days[currentDayKey];
-      ensureDayPushupData(day);
+      ensureDayWorkoutData(day);
       const removed = day.metrics.pushup_extra_log.splice(idx, 1);
       recalcPushupTotals(day);
       renderAll();
@@ -1306,10 +1473,6 @@
         m.plank_sec = Math.max(5, Number(m.plank_sec || 105) + delta);
       } else if (key === "horse_stance") {
         m.horse_sec = Math.max(5, Number(m.horse_sec || 80) + delta);
-      } else if (key === "peloton_bike") {
-        m.peloton_bike = Math.max(0, Number(m.peloton_bike || 10) + delta);
-      } else if (key === "peloton_stretch") {
-        m.peloton_stretch = Math.max(0, Number(m.peloton_stretch || 10) + delta);
       } else if (key === "youtube_mins") {
         m.youtube_mins = Math.max(0, Number(m.youtube_mins || 0) + delta);
       }
@@ -1322,13 +1485,11 @@
       const m = day.metrics;
       if (key === "plank") {
         m.plank_sec = targetSec;
-        const b = day.blocks.find(x => (x.metricKeys || []).includes("plank"));
-        if (b) b.completed = true;
+        m.plank_done = true;
         showToast(`Plank baseline logged: ${fmtSec(targetSec)}`);
       } else if (key === "horse_stance") {
         m.horse_sec = targetSec;
-        const b = day.blocks.find(x => (x.metricKeys || []).includes("horse_stance"));
-        if (b) b.completed = true;
+        m.horse_done = true;
         showToast(`Horse Stance baseline logged: ${fmtSec(targetSec)}`);
       }
       renderAll();
@@ -1339,11 +1500,7 @@
       const day = appState.days[currentDayKey];
       const m = day.metrics;
       const v = Number(rawVal);
-      if (key === "plank") m.plank_sec = v;
-      else if (key === "horse_stance") m.horse_sec = v;
-      else if (key === "peloton_bike") m.peloton_bike = v;
-      else if (key === "peloton_stretch") m.peloton_stretch = v;
-      else if (key === "youtube_mins") m.youtube_mins = v;
+      if (key === "youtube_mins") m.youtube_mins = v;
       renderAll();
       saveState(true);
     }
@@ -1368,15 +1525,13 @@
         const elapsedSec = Math.max(1, Math.round((Date.now() - tObj.holdStartMs) / 1000));
         if (key === "plank") {
           m.plank_sec = elapsedSec;
+          m.plank_done = true;
           if (elapsedSec > hc.plankTargetSec) hc.plankTargetSec = elapsedSec;
-          const b = day.blocks.find(x => (x.metricKeys || []).includes("plank"));
-          if (b) b.completed = true;
           showToast(`Plank logged: ${fmtSec(elapsedSec)}${elapsedSec >= targetSec ? " (Target Met!)" : ""}`);
         } else if (key === "horse_stance") {
           m.horse_sec = elapsedSec;
+          m.horse_done = true;
           if (elapsedSec > hc.horseTargetSec) hc.horseTargetSec = elapsedSec;
-          const b = day.blocks.find(x => (x.metricKeys || []).includes("horse_stance"));
-          if (b) b.completed = true;
           showToast(`Horse Stance logged: ${fmtSec(elapsedSec)}${elapsedSec >= targetSec ? " (Target Met!)" : ""}`);
         }
         renderAll();
@@ -1441,18 +1596,34 @@
       renderAll();
     }
 
-    function buildPushupsUI(day) {
-      ensureDayPushupData(day);
+    /* Render Top Workouts Hub (Outside of Timeblocks) */
+    function renderWorkoutsHub(day) {
+      ensureDayWorkoutData(day);
+      const m = day.metrics;
       const cfg = getPushupSetConfig();
-      const done = day.metrics.pushup_sets_done;
-      const extraLog = day.metrics.pushup_extra_log || [];
-      const extraTotal = day.metrics.pushups_day || 0;
-      const amTotal = day.metrics.pushups_morning || 0;
+      const hc = getHoldConfig();
+
+      const doneSets = m.pushup_sets_done;
+      const pushupsAllDone = Boolean(doneSets[0] && doneSets[1] && doneSets[2]);
+      const extraLog = m.pushup_extra_log || [];
+      const extraTotal = m.pushups_day || 0;
+      const amTotal = m.pushups_morning || 0;
       const grandTotal = amTotal + extraTotal;
 
+      // Count completed workout cards
+      const workoutChecks = [
+        pushupsAllDone,
+        Boolean(m.plank_done),
+        Boolean(m.horse_done),
+        Boolean(m.peloton_bike_done),
+        Boolean(m.peloton_stretch_done)
+      ];
+      const wDoneCount = workoutChecks.filter(Boolean).length;
+      document.getElementById("workoutProgressBadge").textContent = `${wDoneCount}/5 Completed`;
+
       const setBtnsHtml = [0, 1, 2].map(i => `
-        <button class="pushup-set-btn ${done[i] ? 'done' : ''}" onclick="event.stopPropagation(); togglePushupSet(${i})">
-          ${done[i] ? "✓ " : ""}${cfg[i]}
+        <button class="pushup-set-btn ${doneSets[i] ? 'done' : ''}" onclick="event.stopPropagation(); togglePushupSet(${i})">
+          ${doneSets[i] ? "✓ " : ""}${cfg[i]}
         </button>
       `).join("");
 
@@ -1461,115 +1632,157 @@
         `<span class="extra-pill" title="Tap to remove" onclick="event.stopPropagation(); removeExtraSubmission(${idx})">+${val}</span>`
       ).join("");
 
-      return `
-        <div class="pushup-section" onclick="event.stopPropagation()">
-          <div class="pushup-sets-row">
-            ${setBtnsHtml}
-            <button class="pushup-set-btn extra-plus ${extraTotal > 0 ? 'has-extra' : ''}" onclick="openNumpad()">
-              ${plusBtnLabel}
-            </button>
-          </div>
-          <div class="pushup-summary-line">
-            <div class="extra-history-pills">
-              <span>AM: ${amTotal}/${cfg[0]+cfg[1]+cfg[2]}</span>
-              ${extraPillsHtml}
-            </div>
-            <span class="pushup-total-badge">Total: ${grandTotal} reps</span>
-          </div>
-          <div class="gear-config-drawer ${openGearKey === 'pushups' ? 'open' : ''}">
-            <div style="font-size:11px;font-weight:700;color:var(--text-muted);">Adjust Morning 3-Set Rep Targets:</div>
-            <div class="gear-inputs-grid">
-              <input id="gearSet0" class="gear-set-input" type="number" value="${cfg[0]}" />
-              <input id="gearSet1" class="gear-set-input" type="number" value="${cfg[1]}" />
-              <input id="gearSet2" class="gear-set-input" type="number" value="${cfg[2]}" />
-              <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 11px;" onclick="savePushupSetConfig()">Save</button>
+      // 1. Pushups Card
+      const pushupsCardHTML = `
+        <div class="workout-card ${pushupsAllDone ? 'completed' : ''}">
+          <div class="row-main" onclick="togglePushupAll()">
+            <div class="bubble-circle">${CHECK_SVG}</div>
+            <div class="row-text">
+              <div class="row-line">
+                <div class="row-line-left">
+                  <span class="workout-title">Pushups</span>
+                  <span class="workout-sub-pill">${grandTotal} reps</span>
+                </div>
+                <button class="gear-btn ${openGearKey === 'pushups' ? 'active' : ''}" title="Adjust Set Numbers" onclick="event.stopPropagation(); toggleGear('pushups')">
+                  ${GEAR_SVG}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      `;
-    }
-
-    function buildStopwatchUI(key, day) {
-      const hc = getHoldConfig();
-      const m = day.metrics;
-      const isPlank = key === "plank";
-      const curSec = Number(isPlank ? (m.plank_sec ?? 105) : (m.horse_sec ?? 80));
-      const targetSec = Number(isPlank ? (hc.plankTargetSec ?? 105) : (hc.horseTargetSec ?? 80));
-      const goalSec = Number(isPlank ? (hc.plankGoalSec ?? 300) : (hc.horseGoalSec ?? 240));
-      const pct = Math.min(100, Math.round((curSec / targetSec) * 100));
-      const isPr = curSec >= targetSec;
-
-      return `
-        <div class="stopwatch-section" onclick="event.stopPropagation()">
-          <!-- Big Full-Width Tap-to-Start / Tap-to-Stop Stopwatch Bar -->
-          <div id="sw-hero-${key}" class="stopwatch-hero" onclick="toggleStopwatch('${key}', ${targetSec})">
-            <div id="sw-fill-${key}" class="stopwatch-fill ${isPr ? 'pr-fill' : ''}" style="width: ${pct}%;"></div>
-            <div class="stopwatch-left">
-              <div id="sw-clock-${key}" class="stopwatch-clock">${fmtSec(curSec)}</div>
-              <div id="sw-sub-${key}" class="stopwatch-sub">Baseline Target: ${fmtSec(targetSec)} · ${hc.countdownSec}s Get-Set</div>
+          <div class="pushup-section" onclick="event.stopPropagation()">
+            <div class="pushup-sets-row">
+              ${setBtnsHtml}
+              <button class="pushup-set-btn extra-plus ${extraTotal > 0 ? 'has-extra' : ''}" onclick="openNumpad()">
+                ${plusBtnLabel}
+              </button>
             </div>
-            <div id="sw-pill-${key}" class="stopwatch-action-pill">▶ Start Hold</div>
-          </div>
-
-          <!-- Quick Manual Stepper & 1-Tap Log Baseline Row -->
-          <div class="stopwatch-controls-row">
-            <div class="sw-quick-btns">
-              <button class="sw-chip-btn" onclick="stepMetric('${key}', -5)">-5s</button>
-              <button class="sw-chip-btn" onclick="stepMetric('${key}', 5)">+5s</button>
-              <button class="sw-chip-btn baseline-btn" onclick="logBaselineHold('${key}', ${targetSec})">✓ Log ${fmtSec(targetSec)}</button>
+            <div class="pushup-summary-line">
+              <div class="extra-history-pills">
+                <span>AM: ${amTotal}/${cfg[0]+cfg[1]+cfg[2]}</span>
+                ${extraPillsHtml}
+              </div>
+              <span class="pushup-total-badge">Total: ${grandTotal}</span>
             </div>
-            <span class="sw-goal-text">2027 Goal: ${fmtSec(goalSec)}</span>
-          </div>
-
-          <!-- Gear Config Drawer for Adjusting Baseline & Get-Set Countdown -->
-          <div class="gear-config-drawer ${openGearKey === key ? 'open' : ''}">
-            <div style="font-size:11px;font-weight:700;color:var(--text-muted);">Adjust Baseline Target (mm:ss) & Get-Set Countdown (sec):</div>
-            <div class="gear-hold-grid">
-              <input id="gearHoldTarget-${key}" class="gear-set-input" type="text" value="${fmtSec(targetSec)}" placeholder="1:45" />
-              <input id="gearHoldCd-${key}" class="gear-set-input" type="number" value="${hc.countdownSec}" placeholder="3" />
-              <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 11px;" onclick="saveHoldConfig('${key}')">Save</button>
+            <div class="gear-config-drawer ${openGearKey === 'pushups' ? 'open' : ''}">
+              <div style="font-size:11px;font-weight:700;color:var(--text-muted);">Adjust Morning 3-Set Rep Targets:</div>
+              <div class="gear-inputs-grid">
+                <input id="gearSet0" class="gear-set-input" type="number" value="${cfg[0]}" />
+                <input id="gearSet1" class="gear-set-input" type="number" value="${cfg[1]}" />
+                <input id="gearSet2" class="gear-set-input" type="number" value="${cfg[2]}" />
+                <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 11px;" onclick="savePushupSetConfig()">Save</button>
+              </div>
             </div>
           </div>
         </div>
       `;
+
+      // 2. Plank & Horse Stance Stopwatch Cards
+      function buildHoldCard(key, title, doneField) {
+        const isPlank = key === "plank";
+        const curSec = Number(isPlank ? (m.plank_sec ?? 105) : (m.horse_sec ?? 80));
+        const targetSec = Number(isPlank ? (hc.plankTargetSec ?? 105) : (hc.horseTargetSec ?? 80));
+        const goalSec = Number(isPlank ? (hc.plankGoalSec ?? 300) : (hc.horseGoalSec ?? 240));
+        const isDone = Boolean(m[doneField]);
+        const pct = Math.min(100, Math.round((curSec / targetSec) * 100));
+        const isPr = curSec >= targetSec;
+
+        return `
+          <div class="workout-card ${isDone ? 'completed' : ''}">
+            <div class="row-main" onclick="toggleWorkoutDone('${doneField}')">
+              <div class="bubble-circle">${CHECK_SVG}</div>
+              <div class="row-text">
+                <div class="row-line">
+                  <div class="row-line-left">
+                    <span class="workout-title">${title}</span>
+                    <span class="workout-sub-pill">${fmtSec(curSec)} / ${fmtSec(targetSec)}</span>
+                  </div>
+                  <button class="gear-btn ${openGearKey === key ? 'active' : ''}" title="Configure Target & Countdown" onclick="event.stopPropagation(); toggleGear('${key}')">
+                    ${GEAR_SVG}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="stopwatch-section" onclick="event.stopPropagation()">
+              <div id="sw-hero-${key}" class="stopwatch-hero" onclick="toggleStopwatch('${key}', ${targetSec})">
+                <div id="sw-fill-${key}" class="stopwatch-fill ${isPr ? 'pr-fill' : ''}" style="width: ${pct}%;"></div>
+                <div class="stopwatch-left">
+                  <div id="sw-clock-${key}" class="stopwatch-clock">${fmtSec(curSec)}</div>
+                  <div id="sw-sub-${key}" class="stopwatch-sub">Baseline: ${fmtSec(targetSec)} · ${hc.countdownSec}s Get-Set</div>
+                </div>
+                <div id="sw-pill-${key}" class="stopwatch-action-pill">▶ Start Hold</div>
+              </div>
+              <div class="stopwatch-controls-row">
+                <div class="sw-quick-btns">
+                  <button class="sw-chip-btn" onclick="stepMetric('${key}', -5)">-5s</button>
+                  <button class="sw-chip-btn" onclick="stepMetric('${key}', 5)">+5s</button>
+                  <button class="sw-chip-btn baseline-btn" onclick="logBaselineHold('${key}', ${targetSec})">✓ Log ${fmtSec(targetSec)}</button>
+                </div>
+                <span class="sw-goal-text">2027 Goal: ${fmtSec(goalSec)}</span>
+              </div>
+              <div class="gear-config-drawer ${openGearKey === key ? 'open' : ''}">
+                <div style="font-size:11px;font-weight:700;color:var(--text-muted);">Adjust Baseline Target (mm:ss) & Get-Set Countdown (sec):</div>
+                <div class="gear-hold-grid">
+                  <input id="gearHoldTarget-${key}" class="gear-set-input" type="text" value="${fmtSec(targetSec)}" placeholder="1:45" />
+                  <input id="gearHoldCd-${key}" class="gear-set-input" type="number" value="${hc.countdownSec}" placeholder="3" />
+                  <button class="btn-sm" style="background:var(--accent);color:#fff;padding:7px 11px;" onclick="saveHoldConfig('${key}')">Save</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // 3. Peloton Bike & Post-Ride Stretch Side-by-Side Cards
+      const bikeMin = Number(m.peloton_bike ?? 10);
+      const bikeDone = Boolean(m.peloton_bike_done);
+      const strMin = Number(m.peloton_stretch ?? 10);
+      const strDone = Boolean(m.peloton_stretch_done);
+
+      const pelotonGridHTML = `
+        <div class="peloton-grid">
+          <div class="peloton-mini-card ${bikeDone ? 'completed' : ''}">
+            <div class="peloton-top" onclick="toggleWorkoutDone('peloton_bike_done')">
+              <div class="peloton-top-left">
+                <div class="bubble-circle" style="width:20px;height:20px;">${CHECK_SVG}</div>
+                <span style="font-size:13px;font-weight:700;">Peloton Ride</span>
+              </div>
+              <span class="workout-sub-pill">${bikeMin}m</span>
+            </div>
+            <div class="peloton-btns-row">
+              ${[10, 15, 20, 30].map(v => `
+                <button class="peloton-dur-btn ${bikeDone && bikeMin === v ? 'selected' : ''}" onclick="setPelotonDuration('peloton_bike', 'peloton_bike_done', ${v})">${v}m</button>
+              `).join("")}
+            </div>
+          </div>
+
+          <div class="peloton-mini-card ${strDone ? 'completed' : ''}">
+            <div class="peloton-top" onclick="toggleWorkoutDone('peloton_stretch_done')">
+              <div class="peloton-top-left">
+                <div class="bubble-circle" style="width:20px;height:20px;">${CHECK_SVG}</div>
+                <span style="font-size:13px;font-weight:700;">Stretch</span>
+              </div>
+              <span class="workout-sub-pill">${strMin}m</span>
+            </div>
+            <div class="peloton-btns-row">
+              ${[5, 10, 15, 20].map(v => `
+                <button class="peloton-dur-btn ${strDone && strMin === v ? 'selected' : ''}" onclick="setPelotonDuration('peloton_stretch', 'peloton_stretch_done', ${v})">${v}m</button>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("workoutsHub").innerHTML =
+        pushupsCardHTML +
+        buildHoldCard("plank", "Plank Hold", "plank_done") +
+        buildHoldCard("horse_stance", "Horse Stance Hold", "horse_done") +
+        pelotonGridHTML;
     }
 
-    function buildMetricRowHTML(key, m, day) {
-      if (key === "pushups" || key === "pushups_morning") {
-        return buildPushupsUI(day);
-      }
-      if (key === "plank" || key === "horse_stance") {
-        return buildStopwatchUI(key, day);
-      }
-      if (key === "peloton_bike") {
-        const val = Number(m.peloton_bike ?? 10);
-        return `
-          <div class="metric-control" onclick="event.stopPropagation()">
-            <div class="metric-title">Duration<small>Min 10m Ride</small></div>
-            <div class="control-cluster">
-              <button class="step-btn" onclick="stepMetric('peloton_bike', -5)">-</button>
-              <span class="val-pill">${val}m</span>
-              <button class="step-btn" onclick="stepMetric('peloton_bike', 5)">+</button>
-              <input class="touch-slider" type="range" min="0" max="45" step="5" value="${val}" oninput="slideMetric('peloton_bike', this.value)" />
-            </div>
-          </div>`;
-      }
-      if (key === "peloton_stretch") {
-        const val = Number(m.peloton_stretch ?? 10);
-        return `
-          <div class="metric-control" onclick="event.stopPropagation()">
-            <div class="metric-title">Duration<small>Min 10m Stretch</small></div>
-            <div class="control-cluster">
-              <button class="step-btn" onclick="stepMetric('peloton_stretch', -5)">-</button>
-              <span class="val-pill">${val}m</span>
-              <button class="step-btn" onclick="stepMetric('peloton_stretch', 5)">+</button>
-              <input class="touch-slider" type="range" min="0" max="30" step="5" value="${val}" oninput="slideMetric('peloton_stretch', this.value)" />
-            </div>
-          </div>`;
-      }
-      if (key === "youtube_mins") {
-        const val = Number(m.youtube_mins ?? 0);
-        return `
+    function buildYoutubeMetricHTML(m) {
+      const val = Number(m.youtube_mins ?? 0);
+      return `
+        <div class="inline-metrics">
           <div class="metric-control" onclick="event.stopPropagation()">
             <div class="metric-title">YT Editing<small>Session mins</small></div>
             <div class="control-cluster">
@@ -1578,19 +1791,19 @@
               <button class="step-btn" onclick="stepMetric('youtube_mins', 15)">+</button>
               <input class="touch-slider" type="range" min="0" max="180" step="15" value="${val}" oninput="slideMetric('youtube_mins', this.value)" />
             </div>
-          </div>`;
-      }
-      return "";
+          </div>
+        </div>`;
     }
 
     function renderAll() {
       if (!appState || !appState.days[currentDayKey]) return;
       const day = appState.days[currentDayKey];
-      ensureDayPushupData(day);
+      ensureDayWorkoutData(day);
 
       document.getElementById("dayTitle").textContent = day.label;
       const done = day.blocks.filter(b => b.completed).length;
       document.getElementById("progressPill").textContent = `${done}/${day.blocks.length}`;
+      document.getElementById("scheduleProgressBadge").textContent = `${done}/${day.blocks.length} Blocks`;
 
       const sel = document.getElementById("daySelect");
       sel.innerHTML = "";
@@ -1602,6 +1815,10 @@
         sel.appendChild(opt);
       });
 
+      // 1. Render Top Workouts Hub
+      renderWorkoutsHub(day);
+
+      // 2. Render Clean Timeblock Schedule List Below
       const list = document.getElementById("bubbleList");
       list.innerHTML = "";
 
@@ -1609,46 +1826,18 @@
         const rowEl = document.createElement("div");
         rowEl.className = "bubble-row" + (b.completed ? " completed" : "");
 
-        const mKeys = (b.metricKeys || []).filter(k => k !== "peloton_ab" && k !== "pushups_day");
-        const isPushupRow = mKeys.includes("pushups") || mKeys.includes("pushups_morning");
-        const isPlankRow = mKeys.includes("plank");
-        const isHorseRow = mKeys.includes("horse_stance");
-
-        let gearTargetKey = null;
-        if (isPushupRow) gearTargetKey = "pushups";
-        else if (isPlankRow) gearTargetKey = "plank";
-        else if (isHorseRow) gearTargetKey = "horse_stance";
-
-        let metricsHTML = "";
-        if (isPushupRow) {
-          metricsHTML = buildPushupsUI(day);
-        } else if (isPlankRow) {
-          metricsHTML = buildStopwatchUI("plank", day);
-        } else if (isHorseRow) {
-          metricsHTML = buildStopwatchUI("horse_stance", day);
-        } else if (mKeys.length > 0) {
-          const inner = mKeys.map(k => buildMetricRowHTML(k, day.metrics, day)).join("");
-          metricsHTML = `<div class="inline-metrics">${inner}</div>`;
-        }
-
-        const gearIconHTML = gearTargetKey ? `
-          <button class="gear-btn ${openGearKey === gearTargetKey ? 'active' : ''}" title="Configure Targets" onclick="event.stopPropagation(); toggleGear('${gearTargetKey}')">
-            ${GEAR_SVG}
-          </button>
-        ` : "";
+        const hasYt = (b.metricKeys || []).includes("youtube_mins");
+        const metricsHTML = hasYt ? buildYoutubeMetricHTML(day.metrics) : "";
 
         rowEl.innerHTML = `
           <div class="row-main" onclick="toggleBlock(${idx})">
-            <div class="bubble-circle">
-              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            </div>
+            <div class="bubble-circle">${CHECK_SVG}</div>
             <div class="row-text">
               <div class="row-line">
                 <div class="row-line-left">
                   <span class="time-str">${b.time}</span>
                   <span class="task-str">${b.task}</span>
                 </div>
-                ${gearIconHTML}
               </div>
             </div>
           </div>
