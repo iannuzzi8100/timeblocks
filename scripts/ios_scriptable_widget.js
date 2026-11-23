@@ -31,7 +31,11 @@ async function fetchDayData() {
     const req = new Request(apiUrl);
     req.timeoutInterval = 6;
     const state = await req.loadJSON();
-    const activeKey = state.activeDay || Object.keys(state.days)[0];
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const activeKey = (state.days && state.days[todayKey])
+      ? todayKey
+      : (state.activeDay || Object.keys(state.days)[0]);
     return { key: activeKey, day: state.days[activeKey] };
   } catch (e) {
     // Fallback offline snapshot so the widget always renders cleanly

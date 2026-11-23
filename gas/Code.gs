@@ -267,12 +267,26 @@ function replanRollingWeek() {
   state.days = state.days || {};
   state.weatherMap = weatherMap;
 
+  // Keep recent 3 days of history so App_State stays well below the 50k Google Sheet cell limit
+  const pruneCutoffKey = getLocalDateKey(new Date(now.getTime() - 3 * 86400000));
+  Object.keys(state.days).forEach(function(k) {
+    if (k < pruneCutoffKey) delete state.days[k];
+  });
+
   const pushupCfg = state.pushupSetConfig || [33, 33, 34];
   const hc = state.holdConfig || { plankTargetSec: 105, horseTargetSec: 80, plankGoalSec: 300, horseGoalSec: 240, countdownSec: 3 };
+  let firstLabel = "";
+  let lastLabel = "";
+  let lastYear = Utilities.formatDate(now, "America/New_York", "yyyy");
 
   for (let offset = 0; offset < 7; offset++) {
     const d = new Date(now.getTime() + offset * 86400000);
     const dKey = getLocalDateKey(d);
+    if (offset === 0) firstLabel = getDayShortLabel(d);
+    if (offset === 6) {
+      lastLabel = getDayShortLabel(d);
+      lastYear = Utilities.formatDate(d, "America/New_York", "yyyy");
+    }
     const dow = Number(Utilities.formatDate(d, "America/New_York", "u")); // 1=Mon ... 7=Sun
     const isWorkday = dow >= 1 && dow <= 4;
     const isSat = dow === 6;
@@ -380,9 +394,22 @@ function replanRollingWeek() {
   }
 
   state.activeDay = todayKey;
+  state.weekTitle = "Week of " + firstLabel + " - " + lastLabel + ", " + lastYear;
   state.lastAutoPlanned = new Date().toISOString();
   writeLiveState(state);
   return state;
+}
+
+function ensureStateHasToday(stateObj) {
+  const todayKey = getLocalDateKey(new Date());
+  if (!stateObj || !stateObj.days || !stateObj.days[todayKey]) {
+    return replanRollingWeek();
+  }
+  if (stateObj.activeDay !== todayKey) {
+    stateObj.activeDay = todayKey;
+    writeLiveState(stateObj);
+  }
+  return stateObj;
 }
 
 function syncDayToDatabaseTabs(dayKey, stateObj) {
@@ -463,7 +490,7 @@ function doGet(e) {
   }
 
   if (params.api === "state") {
-    const state = readLiveState();
+    const state = ensureStateHasToday(readLiveState());
     return ContentService
       .createTextOutput(JSON.stringify(state))
       .setMimeType(ContentService.MimeType.JSON);
@@ -471,8 +498,9 @@ function doGet(e) {
 
   if (params.toggleRow) {
     const rowNum = parseInt(params.toggleRow, 10);
-    const state = readLiveState();
-    const activeKey = state.activeDay || Object.keys(state.days || {})[0];
+    const state = ensureStateHasToday(readLiveState());
+    const todayKey = getLocalDateKey(new Date());
+    const activeKey = (state.days && state.days[todayKey]) ? todayKey : (state.activeDay || Object.keys(state.days || {})[0]);
     if (activeKey && state.days[activeKey]) {
       const blocks = state.days[activeKey].blocks || [];
       for (let i = 0; i < blocks.length; i++) {

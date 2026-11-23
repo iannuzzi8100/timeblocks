@@ -1334,8 +1334,8 @@
   <!-- Minimal Header: Day Title, Completion Pill, Day Selector, and Small '+' Box Button at Top Right -->
   <header class="top-bar">
     <div class="title-group">
-      <div class="day-title" id="dayTitle">Thu 11/19</div>
-      <div class="progress-pill" id="progressPill">4/10</div>
+      <div class="day-title" id="dayTitle">Today</div>
+      <div class="progress-pill" id="progressPill">--</div>
     </div>
     <div class="top-actions">
       <select id="daySelect" class="day-select" onchange="selectDay(this.value)"></select>
@@ -1466,17 +1466,26 @@
 
   <script>
     let appState = null;
-    let currentDayKey = "2026-11-20";
+    let currentDayKey = getLocalTodayKey();
+    let lastSeenTodayKey = currentDayKey;
     let activeTier = "This week";
     let showCompletedBacklog = false;
     let userManuallyPickedDay = false;
+    let isAutoPlanning = false;
+
+    const SPS_LAT = 28.2036;
+    const SPS_LON = -80.5945;
+    const OUTDOOR_REGEX = /(sprinkler|trailer|walkway|wash|paint|lean-to|leanto|yard|palm|weed|grass|shed|outdoor|window|garage floor|roof|solar|edger|trunk|driveway|plumb|dirt|rock wall)/i;
+
+    function formatDateKeyLocal(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
 
     function getLocalTodayKey() {
-      const now = new Date();
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, "0");
-      const d = String(now.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
+      return formatDateKeyLocal(new Date());
     }
 
     function resolveInitialDayKey(state) {
@@ -1487,7 +1496,293 @@
       if (state && state.activeDay && state.days && state.days[state.activeDay]) {
         return state.activeDay;
       }
-      return Object.keys((state && state.days) || {})[0] || todayKey;
+      const keys = Object.keys((state && state.days) || {}).sort();
+      return keys[keys.length - 1] || todayKey;
+    }
+
+    async function fetchSouthPatrickWeatherClient() {
+      const forecastByDate = {};
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 4000);
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${SPS_LAT}&longitude=${SPS_LON}&daily=temperature_2m_max,precipitation_probability_max&temperature_unit=fahrenheit&timezone=America%2FNew_York`;
+        const resp = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(timer);
+        if (resp.ok) {
+          const json = await resp.json();
+          const dates = (json.daily && json.daily.time) || [];
+          const highs = (json.daily && json.daily.temperature_2m_max) || [];
+          const rains = (json.daily && json.daily.precipitation_probability_max) || [];
+          for (let i = 0; i < dates.length; i++) {
+            forecastByDate[dates[i]] = {
+              highF: Math.round(highs[i] || 75),
+              rainPct: Math.round(rains[i] || 15),
+              isRainy: (rains[i] || 0) >= 40
+            };
+          }
+        }
+      } catch (_) {}
+      return forecastByDate;
+    }
+
+    function scoreTaskForSlotClient(task, isRainyDay, slotType, dow) {
+      if (!task || task.status === "Completed") return -9999;
+
+      // Haircut place is closed Mondays
+      if (dow === 1 && /haircut/i.test(task.title || "")) return -500;
+
+      let score = 0;
+      const tier = (task.tier || "").toLowerCase();
+
+      if (tier.includes("this week")) score += 100;
+      else if (tier.includes("this month")) score += 75;
+      else if (tier.includes("youtube")) score += 60;
+      else if (tier.includes("bigger")) score += 50;
+      else if (tier.includes("computer")) score += 45;
+      else if (tier.includes("next month")) score += 30;
+      else if (tier.includes("general")) score += 25;
+      else score += 10;
+
+      if (task.starred) score += 35;
+      score += Number(task.pushCount || 0) * 30;
+
+      if (slotType === "youtube" && (tier.includes("youtube") || /youtube|short/i.test(task.title || ""))) {
+        score += 90;
+      }
+      if (slotType === "deep_work" && tier.includes("bigger")) {
+        score += 120;
+      }
+      if (slotType === "computer" && tier.includes("computer")) {
+        score += 95;
+      }
+
+      const env = task.env || (OUTDOOR_REGEX.test(task.title || "") ? "Outdoor" : "Indoor");
+      if (isRainyDay) {
+        if (env === "Outdoor") score -= 80;
+        else score += 20;
+      } else {
+        if (env === "Outdoor" && slotType !== "youtube" && slotType !== "computer") {
+          score += 15;
+        }
+      }
+      return score;
+    }
+
+    async function replanRollingWeekClient(baseState) {
+      const state = baseState && typeof baseState === "object" ? baseState : {};
+      state.days = state.days || {};
+      state.backlog = Array.isArray(state.backlog) ? state.backlog : [];
+      if (!Array.isArray(state.pushupSetConfig) || state.pushupSetConfig.length < 1) {
+        state.pushupSetConfig = [33, 33, 34];
+      }
+      state.holdConfig = state.holdConfig || {
+        plankTargetSec: 105,
+        plankGoalSec: 300,
+        horseTargetSec: 80,
+        horseGoalSec: 240,
+        countdownSec: 3
+      };
+
+      const weatherMap = await fetchSouthPatrickWeatherClient();
+      if (Object.keys(weatherMap).length > 0) {
+        state.weatherMap = weatherMap;
+      }
+
+      const activePool = state.backlog.filter(t => t && t.status !== "Completed");
+      const assignedIds = {};
+
+      function pickTopTask(isRainy, slotType, dow) {
+        let best = null;
+        let bestScore = -9999;
+        for (let i = 0; i < activePool.length; i++) {
+          const t = activePool[i];
+          const tid = t.id || t.title;
+          if (assignedIds[tid]) continue;
+          const sc = scoreTaskForSlotClient(t, isRainy, slotType, dow);
+          if (sc > bestScore) {
+            bestScore = sc;
+            best = t;
+          }
+        }
+        if (best) assignedIds[best.id || best.title] = true;
+        return best;
+      }
+
+      const now = new Date();
+      const baseNoon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+      const todayKey = formatDateKeyLocal(baseNoon);
+      const shortDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const fullDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const pushupCfg = state.pushupSetConfig;
+      const hc = state.holdConfig;
+
+      // Keep recent 3 days of history so App_State stays well below the 50k Google Sheet cell limit
+      const pruneCutoffKey = formatDateKeyLocal(new Date(baseNoon.getTime() - 3 * 86400000));
+      Object.keys(state.days).forEach(k => {
+        if (k < pruneCutoffKey) delete state.days[k];
+      });
+
+      let firstLabel = "";
+      let lastLabel = "";
+      let lastYear = baseNoon.getFullYear();
+
+      for (let offset = 0; offset < 7; offset++) {
+        const d = new Date(baseNoon.getTime() + offset * 86400000);
+        const dKey = formatDateKeyLocal(d);
+        const jsDow = d.getDay();
+        const dow = jsDow === 0 ? 7 : jsDow; // 1=Mon ... 7=Sun
+        const isWorkday = dow >= 1 && dow <= 4;
+        const isSat = dow === 6;
+        const isSun = dow === 7;
+        const isAbDay = dow === 2 || dow === 4;
+
+        const label = `${shortDays[jsDow]} ${d.getMonth() + 1}/${d.getDate()}`;
+        const fullLabel = `${fullDays[jsDow]} ${d.getMonth() + 1}/${d.getDate()}`;
+        if (offset === 0) firstLabel = label;
+        if (offset === 6) {
+          lastLabel = label;
+          lastYear = d.getFullYear();
+        }
+
+        const wx = (state.weatherMap && state.weatherMap[dKey]) || { highF: 75, rainPct: 15, isRainy: false };
+        const existingDay = state.days[dKey];
+
+        const completedTitles = {};
+        if (existingDay && Array.isArray(existingDay.blocks)) {
+          existingDay.blocks.forEach(b => {
+            if (b.completed) completedTitles[b.task] = true;
+          });
+        }
+
+        const blocks = [];
+        function addB(time, task, recurring, backlogItem) {
+          blocks.push({
+            row: blocks.length + 1,
+            time: time,
+            task: task,
+            completed: Boolean(completedTitles[task]),
+            recurring: recurring,
+            pushCount: backlogItem ? Number(backlogItem.pushCount || 0) : 0,
+            backlogId: backlogItem ? backlogItem.id : "",
+            metricKeys: []
+          });
+        }
+
+        if (isWorkday) {
+          addB("4:20 - 5:15 AM", "Morning Routine (Feed Dogs, 20m Stretch, Calisthenics, Coffee)", true);
+          addB("5:15 - 6:00 AM", "Commute to Work", true);
+          addB("6:00 AM - 2:30 PM", "Work", true);
+          addB("2:30 - 3:15 PM", "Commute Home", true);
+
+          const slot1Type = (dow >= 2 && dow <= 4) ? "youtube" : "general";
+          const t1 = pickTopTask(wx.isRainy, slot1Type, dow);
+          const t2 = pickTopTask(wx.isRainy, dow === 4 ? "computer" : "general", dow);
+
+          if (t1) addB("3:15 - 4:30 PM", `${t1.tier}: ${t1.title}`, false, t1);
+          if (t2) addB("4:30 - 5:00 PM", `${t2.tier}: ${t2.title}`, false, t2);
+
+          addB("5:15 - 6:00 PM", "Dinner (5:15) & Feed Dogs (5:45)", true);
+          addB("6:00 - 6:35 PM", "Walk Dogs (Walking Off Dinner)", true);
+          addB("6:35 - 7:20 PM", isAbDay ? "Evening Peloton Ride, Stretch, Ab Class & Check-In" : "Evening Peloton Ride, Stretch & 7:05 PM Check-In", true);
+          addB("8:30 PM", "Wind Down & Sleep", true);
+        } else if (isSat) {
+          addB("7:00 - 8:30 AM", "Off-Day Morning Routine (Feed Dogs, 20m Stretch, Calisthenics, Coffee)", true);
+          const deepTask = pickTopTask(wx.isRainy, "deep_work", dow);
+          if (deepTask) addB("8:30 AM - 12:30 PM", `4-Hr Deep Work: ${deepTask.title}`, false, deepTask);
+          addB("12:30 - 2:00 PM", "Workshop Tidy & Project Reset", true);
+          const pm1 = pickTopTask(wx.isRainy, "general", dow);
+          const pm2 = pickTopTask(wx.isRainy, "general", dow);
+          if (pm1) addB("2:00 - 3:30 PM", `${pm1.tier}: ${pm1.title}`, false, pm1);
+          if (pm2) addB("3:30 - 5:00 PM", `${pm2.tier}: ${pm2.title}`, false, pm2);
+          addB("5:15 - 6:00 PM", "Dinner (5:15) & Feed Dogs (5:45)", true);
+          addB("6:00 - 6:35 PM", "Walk Dogs", true);
+          addB("6:35 - 7:20 PM", "Evening Peloton Ride, Stretch & 7:05 PM Check-In", true);
+          addB("8:30 PM", "Wind Down & Sleep", true);
+        } else {
+          addB("7:00 - 8:30 AM", "Off-Day Morning Routine (Feed Dogs, 20m Stretch, Calisthenics, Coffee)", true);
+          const amTask = pickTopTask(wx.isRainy, "general", dow);
+          if (amTask) addB("8:30 - 11:30 AM", `${amTask.tier}: ${amTask.title}`, false, amTask);
+          addB("11:30 AM - 1:00 PM", "Daytime Buffer & Errand Prep", true);
+          const pm1 = pickTopTask(wx.isRainy, isSun ? "computer" : "general", dow);
+          const pm2 = pickTopTask(wx.isRainy, "general", dow);
+          if (pm1) addB("1:00 - 3:00 PM", `${pm1.tier}: ${pm1.title}`, false, pm1);
+          if (pm2) addB("3:00 - 5:00 PM", `${pm2.tier}: ${pm2.title}`, false, pm2);
+          addB("5:15 - 6:00 PM", "Dinner (5:15) & Feed Dogs (5:45)", true);
+          addB("6:00 - 6:35 PM", "Walk Dogs", true);
+          addB("6:35 - 7:20 PM", "Evening Peloton Ride, Stretch & 7:05 PM Check-In", true);
+          addB("8:30 PM", "Wind Down & Sleep", true);
+        }
+
+        const dayMetrics = (existingDay && existingDay.metrics) ? existingDay.metrics : {
+          pushup_sets_done: pushupCfg.map(() => false),
+          pushup_extra_log: [],
+          pushups_morning: 0,
+          pushups_day: 0,
+          plank_sec: hc.plankTargetSec,
+          plank_done: false,
+          horse_sec: hc.horseTargetSec,
+          horse_done: false,
+          peloton_bike: 10,
+          peloton_bike_done: false,
+          peloton_stretch: 10,
+          peloton_stretch_done: false,
+          peloton_ab: isAbDay ? "10m Core" : "Off",
+          peloton_ab_done: false,
+          youtube_mins: 0,
+          notes: ""
+        };
+
+        state.days[dKey] = {
+          label: label,
+          fullLabel: fullLabel,
+          dayType: isWorkday ? "Workday" : (isSat ? "Deep Work" : "Off-Day"),
+          weather: `${wx.highF}°F · ${wx.rainPct}% Rain${wx.isRainy ? " (Indoor Routed)" : ""}`,
+          blocks: blocks,
+          metrics: dayMetrics
+        };
+      }
+
+      state.activeDay = todayKey;
+      state.weekTitle = `Week of ${firstLabel} - ${lastLabel}, ${lastYear}`;
+      state.lastAutoPlanned = new Date().toISOString();
+      return state;
+    }
+
+    async function ensureTodayScheduled(forceReplan = false) {
+      const todayKey = getLocalTodayKey();
+      if (!forceReplan && appState && appState.days && appState.days[todayKey]) {
+        return false;
+      }
+      if (isAutoPlanning) return false;
+      isAutoPlanning = true;
+      try {
+        // 1. Try Google Apps Script cloud replan first (pulls live Tasks_Board checkboxes if Code.gs is updated)
+        if (!IS_LOCAL_DEV && !IS_GAS_FRAME) {
+          try {
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 6000);
+            const res = await fetch(`${CLOUD_API_URL}?api=replan&t=${Date.now()}`, { signal: ctrl.signal });
+            clearTimeout(timer);
+            if (res.ok) {
+              const updated = await res.json();
+              if (updated && updated.days && updated.days[todayKey]) {
+                appState = updated;
+                try { localStorage.setItem("timeblocks_state_v1", JSON.stringify(appState)); } catch (_) {}
+                return true;
+              }
+            }
+          } catch (_) {
+            // Fall through to built-in browser Auto-Planner
+          }
+        }
+
+        // 2. Built-in browser Auto-Planner fallback (works even if Code.gs hasn't been redeployed yet or offline)
+        appState = await replanRollingWeekClient(appState || {});
+        await saveState(true);
+        return true;
+      } finally {
+        isAutoPlanning = false;
+      }
     }
     let activeTimers = {};
     let openGearKey = null;
@@ -1926,12 +2221,24 @@
     const IS_GAS_FRAME = typeof google !== "undefined" && google.script && google.script.run;
 
     async function loadState(manualRefresh = false) {
+      const todayKey = getLocalTodayKey();
+      if (todayKey !== lastSeenTodayKey) {
+        lastSeenTodayKey = todayKey;
+        userManuallyPickedDay = false;
+      }
+
       if (IS_GAS_FRAME) {
-        google.script.run.withSuccessHandler(function(data) {
-          appState = data;
+        google.script.run.withSuccessHandler(async function(data) {
+          appState = data || {};
+          const planned = await ensureTodayScheduled(false);
           if (!userManuallyPickedDay) currentDayKey = resolveInitialDayKey(appState);
+          if (appState.activeDay !== currentDayKey && !userManuallyPickedDay) {
+            appState.activeDay = currentDayKey;
+            saveState(true);
+          }
           renderAll();
-          if (manualRefresh) showToast("Refreshed from Cloud");
+          if (planned) showToast("Auto-planned schedule for today");
+          else if (manualRefresh) showToast("Refreshed from Cloud");
         }).readLiveState();
         return;
       }
@@ -1945,37 +2252,55 @@
           appState = await res.json();
         }
       } else {
-        // GitHub Pages / Standalone PWA: instant render from localStorage cache, then live pull from Google Sheet Cloud
+        // GitHub Pages / Standalone PWA: instant render from localStorage ONLY if cache already has today
         const cached = localStorage.getItem("timeblocks_state_v1");
         if (cached && !appState) {
           try {
-            appState = JSON.parse(cached);
-            if (!userManuallyPickedDay) currentDayKey = resolveInitialDayKey(appState);
-            renderAll();
+            const parsedCache = JSON.parse(cached);
+            appState = parsedCache;
+            if (parsedCache && parsedCache.days && parsedCache.days[todayKey]) {
+              if (!userManuallyPickedDay) currentDayKey = todayKey;
+              renderAll();
+            }
           } catch (_) {}
         }
         try {
           const res = await fetch(`${CLOUD_API_URL}?api=state&t=${Date.now()}`);
           const liveData = await res.json();
           if (liveData && liveData.days) {
-            appState = liveData;
-            localStorage.setItem("timeblocks_state_v1", JSON.stringify(appState));
+            const localHasToday = Boolean(appState && appState.days && appState.days[todayKey]);
+            const cloudHasToday = Boolean(liveData.days[todayKey]);
+            if (cloudHasToday || !localHasToday) {
+              appState = liveData;
+              localStorage.setItem("timeblocks_state_v1", JSON.stringify(appState));
+            } else {
+              // Local already planned today (e.g. right after auto-plan POST); keep local and re-push to cloud
+              saveState(true);
+            }
           }
         } catch (e) {
           if (!appState) {
-            showToast("Offline mode");
-            return;
+            appState = {};
           }
         }
       }
 
-      if (!userManuallyPickedDay) currentDayKey = resolveInitialDayKey(appState);
+      // If today's date is missing from the loaded week (e.g. rolled into a new week), auto-plan 7 days starting today
+      const autoPlannedNow = await ensureTodayScheduled(false);
+
+      if (!userManuallyPickedDay) {
+        currentDayKey = resolveInitialDayKey(appState);
+        if (appState && appState.activeDay !== currentDayKey) {
+          appState.activeDay = currentDayKey;
+          saveState(true);
+        }
+      }
 
       const params = new URLSearchParams(window.location.search);
       if (params.get("toggleRow")) {
         const r = parseInt(params.get("toggleRow"), 10);
         const day = appState.days[currentDayKey];
-        const b = day.blocks.find(x => x.row === r);
+        const b = day && day.blocks.find(x => x.row === r);
         if (b) {
           b.completed = !b.completed;
           saveState(true);
@@ -1985,7 +2310,8 @@
       }
 
       renderAll();
-      if (manualRefresh) showToast("Synced with Cloud");
+      if (autoPlannedNow) showToast(`Auto-planned schedule for ${appState.days[currentDayKey]?.label || "Today"}`);
+      else if (manualRefresh) showToast("Synced with Cloud");
     }
 
     function selectDay(dayKey) {
@@ -1996,15 +2322,28 @@
       saveState(true);
     }
 
+    function handleAppResume() {
+      const todayKey = getLocalTodayKey();
+      if (todayKey !== lastSeenTodayKey) {
+        lastSeenTodayKey = todayKey;
+        userManuallyPickedDay = false;
+      }
+      if (appState && appState.days && appState.days[todayKey] && currentDayKey !== todayKey && !userManuallyPickedDay) {
+        currentDayKey = todayKey;
+        appState.activeDay = todayKey;
+        renderAll();
+      }
+      loadState(false);
+    }
+
     // Automatically refresh & roll over to today whenever the user returns to the app on a new day
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") {
-        const todayKey = getLocalTodayKey();
-        if (appState && appState.days && appState.days[todayKey] && currentDayKey !== todayKey && !userManuallyPickedDay) {
-          currentDayKey = todayKey;
-        }
-        loadState(false);
+        handleAppResume();
       }
+    });
+    window.addEventListener("pageshow", (e) => {
+      if (e.persisted) handleAppResume();
     });
 
     function toggleBlock(idx) {
@@ -2482,7 +2821,8 @@
 
       const sel = document.getElementById("daySelect");
       sel.innerHTML = "";
-      Object.entries(appState.days).forEach(([k, d]) => {
+      Object.keys(appState.days).sort().forEach(k => {
+        const d = appState.days[k];
         const opt = document.createElement("option");
         opt.value = k;
         opt.textContent = `${d.label} (${d.dayType})`;
@@ -2872,7 +3212,7 @@
     }
 
     async function triggerAutoPlan() {
-      showToast("Re-planning 7 days from Tasks_Board + FL weather...");
+      showToast("Re-planning 7 days with live FL weather...");
       if (IS_GAS_FRAME) {
         google.script.run.withSuccessHandler(function(updated) {
           if (updated && updated.days) {
@@ -2886,21 +3226,14 @@
         return;
       }
 
-      try {
-        const res = await fetch(`${CLOUD_API_URL}?api=replan&t=${Date.now()}`);
-        const updated = await res.json();
-        if (updated && updated.days) {
-          appState = updated;
-          try { localStorage.setItem("timeblocks_state_v1", JSON.stringify(appState)); } catch (_) {}
-          userManuallyPickedDay = false;
-          currentDayKey = resolveInitialDayKey(appState);
-          renderAll();
-          showToast("7-Day Schedule Auto-Planned!");
-        } else {
-          showToast("Deploy updated Code.gs to enable Auto-Plan");
-        }
-      } catch (e) {
-        showToast("Auto-Plan needs updated Code.gs deployed");
+      const ok = await ensureTodayScheduled(true);
+      if (ok && appState && appState.days) {
+        userManuallyPickedDay = false;
+        currentDayKey = resolveInitialDayKey(appState);
+        renderAll();
+        showToast("7-Day Schedule Auto-Planned!");
+      } else {
+        showToast("Auto-Plan already running");
       }
     }
 
