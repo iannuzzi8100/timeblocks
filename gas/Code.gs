@@ -3,9 +3,9 @@
  *
  * Bound to: Habit & Metric Progression Tracker (15dIn64ky-LmlAoKlrnYZJEGB4q1WWz2AsmLpKM8d7og)
  *
- * What this engine does automatically (eliminating manual Sunday schedule generation):
+ * What this engine does automatically (daily self-sustaining schedule generation):
  * 1. Reads all 9 side-by-side columns from your 'Tasks_Board' tab (checkboxes + ★ starred priorities).
- * 2. Fetches live 7-day weather for South Patrick Shores, FL (Open-Meteo API, no key required).
+ * 2. Fetches live daily weather for South Patrick Shores, FL (Open-Meteo API, no key required).
  * 3. Applies your exact scheduling rules & 6-tier priority formula:
  *    - Mon-Thu Workdays: 4:20 AM wake-up -> 6:00 AM-2:30 PM Work -> 3:15-5:00 PM Dynamic Project Window (hard stop 5:00 PM)
  *    - Fri-Sun Off-Days: 7:00 AM wake-up -> Sat 8:30 AM-12:30 PM 4-Hr Deep Work ('Bigger projects') -> no breakfast/lunch ever
@@ -140,14 +140,14 @@ function syncCompletedToTasksBoard(stateObj) {
 }
 
 /**
- * Fetches live 7-day forecast for South Patrick Shores, FL via Open-Meteo (free, no key)
+ * Fetches live daily forecast for South Patrick Shores, FL via Open-Meteo (free, no key)
  */
 function fetchSouthPatrickWeather() {
   const forecastByDate = {};
   try {
     const url = "https://api.open-meteo.com/v1/forecast?latitude=" + SPS_LAT +
       "&longitude=" + SPS_LON +
-      "&daily=temperature_2m_max,precipitation_probability_max&temperature_unit=fahrenheit&timezone=America%2FNew_York";
+      "&daily=temperature_2m_max,precipitation_probability_max&temperature_unit=fahrenheit&timezone=America%2FNew_York&forecast_days=2";
     const resp = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
     if (resp.getResponseCode() === 200) {
       const json = JSON.parse(resp.getContentText());
@@ -171,8 +171,14 @@ function fetchSouthPatrickWeather() {
 /**
  * Priority Scoring Formula for Derek's 6-Tier System + Weather Routing + Red Push Urgency
  */
-function scoreTaskForSlot(task, isRainyDay, slotType) {
+function scoreTaskForSlot(task, isRainyDay, slotType, dow, todayKey) {
   if (task.status === "Completed") return -9999;
+
+  // Respect "Not Today" deferral for the rest of today; it rises to the top tomorrow via pushCount heat
+  if (task.deferredFromDate && task.deferredFromDate === todayKey) return -9999;
+
+  // Haircut place is closed Mondays
+  if (dow === 1 && /haircut/i.test(task.title || "")) return -500;
 
   let score = 0;
   const tier = (task.tier || "").toLowerCase();
@@ -218,41 +224,60 @@ function scoreTaskForSlot(task, isRainyDay, slotType) {
 }
 
 /**
- * Rolling 7-Day Smart Auto-Scheduler Engine
- * Rebuilds/updates the next 7 days directly from 'Tasks_Board' + Live Weather + Rules
+ * Daily Smart Auto-Scheduler Engine
+ * Builds/updates ONLY today's schedule directly from 'Tasks_Board' + Live Weather + Rules
  * while preserving today's completed checkboxes, workout metrics, and pushed items.
  */
-function replanRollingWeek() {
+function replanToday() {
   const state = readLiveState();
   const boardTasks = readTasksBoard();
   const weatherMap = fetchSouthPatrickWeather();
 
-  // Merge pushCount from existing backlog so red urgency is never lost
-  const prevPushMap = {};
+  // Preserve pushCount and deferredFromDate from existing backlog so red urgency & same-day deferrals are never lost
+  const prevMetaMap = {};
   (state.backlog || []).forEach(function(old) {
-    if (old.title && old.pushCount) {
-      prevPushMap[old.title.toLowerCase()] = Number(old.pushCount || 0);
+    if (old.title) {
+      prevMetaMap[old.title.toLowerCase()] = {
+        pushCount: Number(old.pushCount || 0),
+        deferredFromDate: old.deferredFromDate || ""
+      };
     }
   });
   boardTasks.forEach(function(t) {
-    const prevP = prevPushMap[t.title.toLowerCase()];
-    if (prevP) t.pushCount = prevP;
+    const prev = prevMetaMap[t.title.toLowerCase()];
+    if (prev) {
+      if (prev.pushCount) t.pushCount = prev.pushCount;
+      if (prev.deferredFromDate) t.deferredFromDate = prev.deferredFromDate;
+    }
   });
 
   if (boardTasks.length > 0) {
     state.backlog = boardTasks;
   }
 
+  const now = new Date();
+  const todayKey = getLocalDateKey(now);
+  state.days = state.days || {};
+  state.weatherMap = weatherMap;
+
+  // Daily mode: remove pre-generated future days and keep up to 3 recent past days for reference
+  const pruneCutoffKey = getLocalDateKey(new Date(now.getTime() - 3 * 86400000));
+  Object.keys(state.days).forEach(function(k) {
+    if (k < pruneCutoffKey || k > todayKey) {
+      delete state.days[k];
+    }
+  });
+
   const activePool = (state.backlog || []).filter(function(t) { return t.status !== "Completed"; });
   const assignedIds = {};
 
-  function pickTopTask(isRainy, slotType) {
+  function pickTopTask(isRainy, slotType, dow) {
     let best = null;
     let bestScore = -9999;
     for (let i = 0; i < activePool.length; i++) {
       const t = activePool[i];
       if (assignedIds[t.id]) continue;
-      const sc = scoreTaskForSlot(t, isRainy, slotType);
+      const sc = scoreTaskForSlot(t, isRainy, slotType, dow, todayKey);
       if (sc > bestScore) {
         bestScore = sc;
         best = t;
@@ -262,148 +287,132 @@ function replanRollingWeek() {
     return best;
   }
 
-  const now = new Date();
-  const todayKey = getLocalDateKey(now);
-  state.days = state.days || {};
-  state.weatherMap = weatherMap;
-
-  // Keep recent 3 days of history so App_State stays well below the 50k Google Sheet cell limit
-  const pruneCutoffKey = getLocalDateKey(new Date(now.getTime() - 3 * 86400000));
-  Object.keys(state.days).forEach(function(k) {
-    if (k < pruneCutoffKey) delete state.days[k];
-  });
-
   const pushupCfg = state.pushupSetConfig || [33, 33, 34];
   const hc = state.holdConfig || { plankTargetSec: 105, horseTargetSec: 80, plankGoalSec: 300, horseGoalSec: 240, countdownSec: 3 };
-  let firstLabel = "";
-  let lastLabel = "";
-  let lastYear = Utilities.formatDate(now, "America/New_York", "yyyy");
 
-  for (let offset = 0; offset < 7; offset++) {
-    const d = new Date(now.getTime() + offset * 86400000);
-    const dKey = getLocalDateKey(d);
-    if (offset === 0) firstLabel = getDayShortLabel(d);
-    if (offset === 6) {
-      lastLabel = getDayShortLabel(d);
-      lastYear = Utilities.formatDate(d, "America/New_York", "yyyy");
-    }
-    const dow = Number(Utilities.formatDate(d, "America/New_York", "u")); // 1=Mon ... 7=Sun
-    const isWorkday = dow >= 1 && dow <= 4;
-    const isSat = dow === 6;
-    const isSun = dow === 7;
-    const isAbDay = dow === 2 || dow === 4; // Tue & Thu
+  const dow = Number(Utilities.formatDate(now, "America/New_York", "u")); // 1=Mon ... 7=Sun
+  const isWorkday = dow >= 1 && dow <= 4;
+  const isSat = dow === 6;
+  const isSun = dow === 7;
+  const isAbDay = dow === 2 || dow === 4; // Tue & Thu
 
-    const wx = weatherMap[dKey] || { highF: 75, rainPct: 15, isRainy: false };
-    const existingDay = state.days[dKey];
+  const wx = weatherMap[todayKey] || { highF: 75, rainPct: 15, isRainy: false };
+  const existingDay = state.days[todayKey];
 
-    // Preserve completed status of any already-checked blocks on today
-    const completedTitles = {};
-    if (existingDay && Array.isArray(existingDay.blocks)) {
-      existingDay.blocks.forEach(function(b) {
-        if (b.completed) completedTitles[b.task] = true;
-      });
-    }
-
-    const blocks = [];
-    function addB(time, task, recurring, backlogItem) {
-      blocks.push({
-        row: blocks.length + 1,
-        time: time,
-        task: task,
-        completed: Boolean(completedTitles[task]),
-        recurring: recurring,
-        pushCount: backlogItem ? Number(backlogItem.pushCount || 0) : 0,
-        backlogId: backlogItem ? backlogItem.id : "",
-        metricKeys: []
-      });
-    }
-
-    if (isWorkday) {
-      addB("4:20 - 5:15 AM", "Morning Routine (Feed Dogs, 20m Stretch, Calisthenics, Coffee)", true);
-      addB("5:15 - 6:00 AM", "Commute to Work", true);
-      addB("6:00 AM - 2:30 PM", "Work", true);
-      addB("2:30 - 3:15 PM", "Commute Home", true);
-
-      const slot1Type = (dow >= 2 && dow <= 4) ? "youtube" : "general";
-      const t1 = pickTopTask(wx.isRainy, slot1Type);
-      const t2 = pickTopTask(wx.isRainy, dow === 4 ? "computer" : "general");
-
-      if (t1) addB("3:15 - 4:30 PM", t1.tier + ": " + t1.title, false, t1);
-      if (t2) addB("4:30 - 5:00 PM", t2.tier + ": " + t2.title, false, t2);
-
-      addB("5:15 - 6:00 PM", "Dinner (5:15) & Feed Dogs (5:45)", true);
-      addB("6:00 - 6:35 PM", "Walk Dogs (Walking Off Dinner)", true);
-      addB("6:35 - 7:20 PM", isAbDay ? "Evening Peloton Ride, Stretch, Ab Class & Check-In" : "Evening Peloton Ride, Stretch & 7:05 PM Check-In", true);
-      addB("8:30 PM", "Wind Down & Sleep", true);
-    } else if (isSat) {
-      addB("7:00 - 8:30 AM", "Off-Day Morning Routine (Feed Dogs, 20m Stretch, Calisthenics, Coffee)", true);
-      const deepTask = pickTopTask(wx.isRainy, "deep_work");
-      if (deepTask) addB("8:30 AM - 12:30 PM", "4-Hr Deep Work: " + deepTask.title, false, deepTask);
-      addB("12:30 - 2:00 PM", "Workshop Tidy & Project Reset", true);
-      const pm1 = pickTopTask(wx.isRainy, "general");
-      const pm2 = pickTopTask(wx.isRainy, "general");
-      if (pm1) addB("2:00 - 3:30 PM", pm1.tier + ": " + pm1.title, false, pm1);
-      if (pm2) addB("3:30 - 5:00 PM", pm2.tier + ": " + pm2.title, false, pm2);
-      addB("5:15 - 6:00 PM", "Dinner (5:15) & Feed Dogs (5:45)", true);
-      addB("6:00 - 6:35 PM", "Walk Dogs", true);
-      addB("6:35 - 7:20 PM", "Evening Peloton Ride, Stretch & 7:05 PM Check-In", true);
-      addB("8:30 PM", "Wind Down & Sleep", true);
-    } else {
-      // Friday or Sunday Off-Day
-      addB("7:00 - 8:30 AM", "Off-Day Morning Routine (Feed Dogs, 20m Stretch, Calisthenics, Coffee)", true);
-      const amTask = pickTopTask(wx.isRainy, "general");
-      if (amTask) addB("8:30 - 11:30 AM", amTask.tier + ": " + amTask.title, false, amTask);
-      addB("11:30 AM - 1:00 PM", "Daytime Buffer & Errand Prep", true);
-      const pm1 = pickTopTask(wx.isRainy, isSun ? "computer" : "general");
-      const pm2 = pickTopTask(wx.isRainy, "general");
-      if (pm1) addB("1:00 - 3:00 PM", pm1.tier + ": " + pm1.title, false, pm1);
-      if (pm2) addB("3:00 - 5:00 PM", pm2.tier + ": " + pm2.title, false, pm2);
-      addB("5:15 - 6:00 PM", "Dinner (5:15) & Feed Dogs (5:45)", true);
-      addB("6:00 - 6:35 PM", "Walk Dogs", true);
-      addB("6:35 - 7:20 PM", "Evening Peloton Ride, Stretch & 7:05 PM Check-In", true);
-      addB("8:30 PM", "Wind Down & Sleep", true);
-    }
-
-    const dayMetrics = (existingDay && existingDay.metrics) ? existingDay.metrics : {
-      pushup_sets_done: pushupCfg.map(function() { return false; }),
-      pushup_extra_log: [],
-      pushups_morning: 0,
-      pushups_day: 0,
-      plank_sec: hc.plankTargetSec,
-      plank_done: false,
-      horse_sec: hc.horseTargetSec,
-      horse_done: false,
-      peloton_bike: 10,
-      peloton_bike_done: false,
-      peloton_stretch: 10,
-      peloton_stretch_done: false,
-      peloton_ab: isAbDay ? "10m Core" : "Off",
-      peloton_ab_done: false,
-      youtube_mins: 0,
-      notes: ""
-    };
-
-    state.days[dKey] = {
-      label: getDayShortLabel(d),
-      fullLabel: getDayFullLabel(d),
-      dayType: isWorkday ? "Workday" : (isSat ? "Deep Work" : "Off-Day"),
-      weather: wx.highF + "°F · " + wx.rainPct + "% Rain" + (wx.isRainy ? " (Indoor Routed)" : ""),
-      blocks: blocks,
-      metrics: dayMetrics
-    };
+  // Preserve completed status of any already-checked blocks on today
+  const completedTitles = {};
+  if (existingDay && Array.isArray(existingDay.blocks)) {
+    existingDay.blocks.forEach(function(b) {
+      if (b.completed) completedTitles[b.task] = true;
+    });
   }
 
+  const blocks = [];
+  function addB(time, task, recurring, backlogItem) {
+    blocks.push({
+      row: blocks.length + 1,
+      time: time,
+      task: task,
+      completed: Boolean(completedTitles[task]),
+      recurring: recurring,
+      pushCount: backlogItem ? Number(backlogItem.pushCount || 0) : 0,
+      backlogId: backlogItem ? backlogItem.id : "",
+      metricKeys: []
+    });
+  }
+
+  if (isWorkday) {
+    addB("4:20 - 5:15 AM", "Morning Routine (Feed Dogs, 20m Stretch, Calisthenics, Coffee)", true);
+    addB("5:15 - 6:00 AM", "Commute to Work", true);
+    addB("6:00 AM - 2:30 PM", "Work", true);
+    addB("2:30 - 3:15 PM", "Commute Home", true);
+
+    const slot1Type = (dow >= 2 && dow <= 4) ? "youtube" : "general";
+    const t1 = pickTopTask(wx.isRainy, slot1Type, dow);
+    const t2 = pickTopTask(wx.isRainy, dow === 4 ? "computer" : "general", dow);
+
+    if (t1) addB("3:15 - 4:30 PM", t1.tier + ": " + t1.title, false, t1);
+    if (t2) addB("4:30 - 5:00 PM", t2.tier + ": " + t2.title, false, t2);
+
+    addB("5:15 - 6:00 PM", "Dinner (5:15) & Feed Dogs (5:45)", true);
+    addB("6:00 - 6:35 PM", "Walk Dogs (Walking Off Dinner)", true);
+    addB("6:35 - 7:20 PM", isAbDay ? "Evening Peloton Ride, Stretch, Ab Class & Check-In" : "Evening Peloton Ride, Stretch & 7:05 PM Check-In", true);
+    addB("8:30 PM", "Wind Down & Sleep", true);
+  } else if (isSat) {
+    addB("7:00 - 8:30 AM", "Off-Day Morning Routine (Feed Dogs, 20m Stretch, Calisthenics, Coffee)", true);
+    const deepTask = pickTopTask(wx.isRainy, "deep_work", dow);
+    if (deepTask) addB("8:30 AM - 12:30 PM", "4-Hr Deep Work: " + deepTask.title, false, deepTask);
+    addB("12:30 - 2:00 PM", "Workshop Tidy & Project Reset", true);
+    const pm1 = pickTopTask(wx.isRainy, "general", dow);
+    const pm2 = pickTopTask(wx.isRainy, "general", dow);
+    if (pm1) addB("2:00 - 3:30 PM", pm1.tier + ": " + pm1.title, false, pm1);
+    if (pm2) addB("3:30 - 5:00 PM", pm2.tier + ": " + pm2.title, false, pm2);
+    addB("5:15 - 6:00 PM", "Dinner (5:15) & Feed Dogs (5:45)", true);
+    addB("6:00 - 6:35 PM", "Walk Dogs", true);
+    addB("6:35 - 7:20 PM", "Evening Peloton Ride, Stretch & 7:05 PM Check-In", true);
+    addB("8:30 PM", "Wind Down & Sleep", true);
+  } else {
+    // Friday or Sunday Off-Day
+    addB("7:00 - 8:30 AM", "Off-Day Morning Routine (Feed Dogs, 20m Stretch, Calisthenics, Coffee)", true);
+    const amTask = pickTopTask(wx.isRainy, "general", dow);
+    if (amTask) addB("8:30 - 11:30 AM", amTask.tier + ": " + amTask.title, false, amTask);
+    addB("11:30 AM - 1:00 PM", "Daytime Buffer & Errand Prep", true);
+    const pm1 = pickTopTask(wx.isRainy, isSun ? "computer" : "general", dow);
+    const pm2 = pickTopTask(wx.isRainy, "general", dow);
+    if (pm1) addB("1:00 - 3:00 PM", pm1.tier + ": " + pm1.title, false, pm1);
+    if (pm2) addB("3:00 - 5:00 PM", pm2.tier + ": " + pm2.title, false, pm2);
+    addB("5:15 - 6:00 PM", "Dinner (5:15) & Feed Dogs (5:45)", true);
+    addB("6:00 - 6:35 PM", "Walk Dogs", true);
+    addB("6:35 - 7:20 PM", "Evening Peloton Ride, Stretch & 7:05 PM Check-In", true);
+    addB("8:30 PM", "Wind Down & Sleep", true);
+  }
+
+  const dayMetrics = (existingDay && existingDay.metrics) ? existingDay.metrics : {
+    pushup_sets_done: pushupCfg.map(function() { return false; }),
+    pushup_extra_log: [],
+    pushups_morning: 0,
+    pushups_day: 0,
+    plank_sec: hc.plankTargetSec,
+    plank_done: false,
+    horse_sec: hc.horseTargetSec,
+    horse_done: false,
+    peloton_bike: 10,
+    peloton_bike_done: false,
+    peloton_stretch: 10,
+    peloton_stretch_done: false,
+    peloton_ab: isAbDay ? "10m Core" : "Off",
+    peloton_ab_done: false,
+    youtube_mins: 0,
+    notes: ""
+  };
+
+  const fullLabel = getDayFullLabel(now);
+  state.days[todayKey] = {
+    label: getDayShortLabel(now),
+    fullLabel: fullLabel,
+    dayType: isWorkday ? "Workday" : (isSat ? "Deep Work" : "Off-Day"),
+    weather: wx.highF + "°F · " + wx.rainPct + "% Rain" + (wx.isRainy ? " (Indoor Routed)" : ""),
+    blocks: blocks,
+    metrics: dayMetrics
+  };
+
+  state.scheduleMode = "daily";
   state.activeDay = todayKey;
-  state.weekTitle = "Week of " + firstLabel + " - " + lastLabel + ", " + lastYear;
+  state.weekTitle = fullLabel + ", " + Utilities.formatDate(now, "America/New_York", "yyyy");
   state.lastAutoPlanned = new Date().toISOString();
   writeLiveState(state);
   return state;
 }
 
+// Backwards-compatible alias for any existing Apps Script triggers
+function replanRollingWeek() {
+  return replanToday();
+}
+
 function ensureStateHasToday(stateObj) {
   const todayKey = getLocalDateKey(new Date());
   if (!stateObj || !stateObj.days || !stateObj.days[todayKey]) {
-    return replanRollingWeek();
+    return replanToday();
   }
   if (stateObj.activeDay !== todayKey) {
     stateObj.activeDay = todayKey;
@@ -483,7 +492,7 @@ function doGet(e) {
   const params = (e && e.parameter) ? e.parameter : {};
 
   if (params.api === "replan") {
-    const updated = replanRollingWeek();
+    const updated = replanToday();
     return ContentService
       .createTextOutput(JSON.stringify(updated))
       .setMimeType(ContentService.MimeType.JSON);
@@ -523,7 +532,7 @@ function doPost(e) {
   try {
     const payload = JSON.parse(e.postData.contents || "{}");
     if (payload.action === "replan") {
-      const updated = replanRollingWeek();
+      const updated = replanToday();
       return ContentService.createTextOutput(JSON.stringify({ ok: true, state: updated })).setMimeType(ContentService.MimeType.JSON);
     }
     if (payload.action === "log-sheet") {
